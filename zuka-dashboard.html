@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZUKA — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green:        #0B3D2E;
+      --green-mid:    #145C42;
+      --green-light:  #1E7A57;
+      --green-pale:   #EAF4EF;
+      --gold:         #D4A017;
+      --gold-light:   #F0C040;
+      --gold-pale:    #FDF6E3;
+      --white:        #FAFAF5;
+      --off-white:    #F3F0E8;
+      --text-dark:    #0B1F17;
+      --text-muted:   #6B7F75;
+      --border:       #E4E1D8;
+      --sidebar-w:    260px;
+    }
+
+    html, body {
+      height: 100%; font-family: 'DM Sans', sans-serif;
+      background: var(--off-white); color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--green);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; height: 100vh;
+      z-index: 50; padding: 0;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .sidebar-logo {
+      padding: 1.8rem 1.6rem 1.4rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 900;
+      color: var(--gold); letter-spacing: 3px;
+    }
+    .logo-tagline {
+      font-size: 0.68rem; color: rgba(255,255,255,0.35);
+      letter-spacing: 1px; margin-top: 0.2rem;
+      text-transform: uppercase;
+    }
+    .sidebar-user {
+      padding: 1.2rem 1.6rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .user-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--gold); display: flex;
+      align-items: center; justify-content: center;
+      font-weight: 700; color: var(--green);
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 0.88rem; font-weight: 600;
+      color: var(--white);
+    }
+    .user-plan {
+      font-size: 0.7rem; color: rgba(255,255,255,0.4);
+      margin-top: 0.1rem;
+    }
+    .sidebar-nav {
+      flex: 1; padding: 1rem 0; overflow-y: auto;
+    }
+    .nav-section-label {
+      font-size: 0.65rem; letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      padding: 0.8rem 1.6rem 0.4rem;
+      font-weight: 600;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.7rem 1.6rem; cursor: pointer;
+      transition: all 0.2s; border-left: 3px solid transparent;
+      text-decoration: none;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.06);
+      border-left-color: rgba(212,160,23,0.4);
+    }
+    .nav-item.active {
+      background: rgba(212,160,23,0.12);
+      border-left-color: var(--gold);
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-label {
+      font-size: 0.88rem; color: rgba(255,255,255,0.7);
+      font-weight: 400;
+    }
+    .nav-item.active .nav-label { color: var(--white); font-weight: 500; }
+    .nav-badge {
+      margin-left: auto; background: var(--gold);
+      color: var(--green); font-size: 0.65rem;
+      font-weight: 700; padding: 0.15rem 0.45rem;
+      border-radius: 10px;
+    }
+    .sidebar-footer {
+      padding: 1rem 1.6rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .upgrade-card {
+      background: rgba(212,160,23,0.12);
+      border: 1px solid rgba(212,160,23,0.25);
+      border-radius: 6px; padding: 1rem;
+    }
+    .upgrade-card p {
+      font-size: 0.78rem; color: rgba(255,255,255,0.65);
+      margin-bottom: 0.6rem; line-height: 1.4;
+    }
+    .upgrade-btn {
+      background: var(--gold); color: var(--green);
+      border: none; border-radius: 4px;
+      padding: 0.45rem 1rem; font-size: 0.78rem;
+      font-weight: 700; cursor: pointer; width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+    }
+    .upgrade-btn:hover { background: var(--gold-light); }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1; display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 40;
+    }
+    .topbar-left h2 {
+      font-size: 1rem; font-weight: 600;
+      color: var(--text-dark);
+    }
+    .topbar-left p {
+      font-size: 0.78rem; color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .search-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--off-white); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.5rem 0.9rem;
+    }
+    .search-bar input {
+      border: none; background: transparent;
+      font-size: 0.85rem; color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif; outline: none;
+      width: 180px;
+    }
+    .search-bar input::placeholder { color: var(--text-muted); }
+    .notif-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--off-white); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem; position: relative;
+    }
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--gold); border: 2px solid var(--white);
+    }
+
+    /* ── CONTENT ── */
+    .content { padding: 2rem; flex: 1; }
+
+    /* ── WELCOME BANNER ── */
+    .welcome-banner {
+      background: var(--green); border-radius: 10px;
+      padding: 1.8rem 2rem; margin-bottom: 1.8rem;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      position: relative; overflow: hidden;
+      animation: fadeUp 0.6s ease both;
+    }
+    .welcome-banner::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,160,23,0.15) 0%, transparent 70%);
+    }
+    .welcome-text h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 700;
+      color: var(--white);
+    }
+    .welcome-text h1 span { color: var(--gold); }
+    .welcome-text p {
+      font-size: 0.85rem; color: rgba(255,255,255,0.6);
+      margin-top: 0.3rem; font-weight: 300;
+    }
+    .welcome-progress-wrap { text-align: right; min-width: 180px; }
+    .progress-label {
+      font-size: 0.72rem; color: rgba(255,255,255,0.5);
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .progress-bar-bg {
+      background: rgba(255,255,255,0.12);
+      border-radius: 20px; height: 8px; width: 180px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 20px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      transition: width 0.8s ease;
+      width: 20%;
+    }
+    .progress-pct {
+      font-size: 0.78rem; color: var(--gold);
+      font-weight: 600; margin-top: 0.3rem;
+    }
+
+    /* ── GRID ROW ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.5rem; margin-bottom: 1.8rem;
+    }
+
+    /* ── ONBOARDING CHECKLIST ── */
+    .card {
+      background: var(--white); border-radius: 10px;
+      border: 1px solid var(--border);
+      animation: fadeUp 0.6s ease both;
+    }
+    .card-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 0.92rem; font-weight: 600;
+      color: var(--text-dark);
+    }
+    .card-subtitle {
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .card-badge {
+      font-size: 0.7rem; background: var(--green-pale);
+      color: var(--green-mid); padding: 0.25rem 0.6rem;
+      border-radius: 20px; font-weight: 600;
+    }
+    .card-body { padding: 1.2rem 1.5rem; }
+
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .check-item {
+      display: flex; align-items: center; gap: 0.9rem;
+      padding: 0.8rem 1rem; border-radius: 7px;
+      border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.25s;
+      position: relative;
+    }
+    .check-item:hover { border-color: var(--gold); background: var(--gold-pale); }
+    .check-item.done {
+      background: var(--green-pale);
+      border-color: rgba(30,122,87,0.3);
+    }
+    .check-item.active-step {
+      border-color: var(--gold);
+      background: var(--gold-pale);
+      box-shadow: 0 2px 10px rgba(212,160,23,0.12);
+    }
+    .check-circle {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; transition: all 0.3s;
+      background: var(--white);
+    }
+    .check-item.done .check-circle {
+      background: var(--green-light); border-color: var(--green-light);
+      color: white;
+    }
+    .check-item.active-step .check-circle {
+      border-color: var(--gold); background: var(--gold);
+      color: var(--green); font-weight: 700;
+    }
+    .check-info { flex: 1; }
+    .check-title {
+      font-size: 0.88rem; font-weight: 500;
+      color: var(--text-dark);
+    }
+    .check-item.done .check-title {
+      color: var(--text-muted); text-decoration: line-through;
+    }
+    .check-desc {
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-top: 0.15rem; font-weight: 300;
+    }
+    .check-action {
+      font-size: 0.72rem; color: var(--gold);
+      font-weight: 600; white-space: nowrap;
+    }
+    .check-item.done .check-action { color: var(--green-light); }
+
+    /* ── STATS COLUMN ── */
+    .stats-col { display: flex; flex-direction: column; gap: 1rem; }
+    .stat-card {
+      background: var(--white); border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.4rem;
+      display: flex; align-items: center; gap: 1rem;
+      animation: fadeUp 0.6s ease both;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(11,61,46,0.07);
+    }
+    .stat-icon-wrap {
+      width: 44px; height: 44px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .bg-green { background: var(--green-pale); }
+    .bg-gold  { background: var(--gold-pale); }
+    .bg-dark  { background: #F0EBF8; }
+    .stat-info { flex: 1; }
+    .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 700;
+      color: var(--text-dark); line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .stat-change {
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--green-light);
+    }
+
+    /* ── AI TIP ── */
+    .ai-tip {
+      background: var(--green); border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      animation: fadeUp 0.7s ease both;
+    }
+    .tip-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .tip-label {
+      font-size: 0.68rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--gold);
+      font-weight: 600; margin-bottom: 0.3rem;
+    }
+    .tip-text {
+      font-size: 0.85rem; color: rgba(255,255,255,0.75);
+      line-height: 1.6; font-weight: 300;
+    }
+
+    /* ── JOBS SECTION ── */
+    .section-head {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 1rem;
+    }
+    .section-head h3 {
+      font-size: 1rem; font-weight: 600; color: var(--text-dark);
+    }
+    .see-all {
+      font-size: 0.8rem; color: var(--gold);
+      font-weight: 600; cursor: pointer;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .see-all:hover { color: var(--green); }
+    .jobs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .job-card {
+      background: var(--white); border-radius: 10px;
+      border: 1px solid var(--border); padding: 1.2rem;
+      transition: all 0.25s; cursor: pointer;
+      animation: fadeUp 0.7s ease both;
+    }
+    .job-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(11,61,46,0.08);
+    }
+    .job-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+    .job-company-logo {
+      width: 38px; height: 38px; border-radius: 7px;
+      background: var(--green-pale); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .job-save {
+      font-size: 1rem; cursor: pointer; color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .job-save:hover { color: var(--gold); }
+    .job-title {
+      font-size: 0.92rem; font-weight: 600;
+      color: var(--text-dark); margin: 0.7rem 0 0.2rem;
+    }
+    .job-company { font-size: 0.78rem; color: var(--text-muted); }
+    .job-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.7rem 0; }
+    .job-tag {
+      font-size: 0.68rem; padding: 0.2rem 0.55rem;
+      border-radius: 20px; font-weight: 500;
+    }
+    .tag-green { background: var(--green-pale); color: var(--green-mid); }
+    .tag-gold  { background: var(--gold-pale);  color: #8B6200; }
+    .tag-gray  { background: var(--off-white);  color: var(--text-muted); }
+    .job-footer {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-top: 0.8rem;
+      padding-top: 0.8rem; border-top: 1px solid var(--border);
+    }
+    .job-salary {
+      font-size: 0.82rem; font-weight: 600; color: var(--green);
+    }
+    .job-match {
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--gold); background: var(--gold-pale);
+      padding: 0.2rem 0.55rem; border-radius: 20px;
+    }
+    .apply-btn {
+      width: 100%; margin-top: 0.8rem;
+      background: var(--green); color: var(--white);
+      border: none; border-radius: 5px; padding: 0.6rem;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+    }
+    .apply-btn:hover { background: var(--green-light); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.15s; }
+    .stat-card:nth-child(3) { animation-delay: 0.2s; }
+    .job-card:nth-child(2) { animation-delay: 0.1s; }
+    .job-card:nth-child(3) { animation-delay: 0.2s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">ZUKA</div>
+      <div class="logo-tagline">AI Career Launchpad</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">AM</div>
+      <div>
+        <div class="user-name">Amara Mensah</div>
+        <div class="user-plan">Free Plan</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item active" href="zuka-dashboard.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="zuka-jobs.html">
+        <span class="nav-icon">🌐</span>
+        <span class="nav-label">Browse Jobs</span>
+        <span class="nav-badge">New</span>
+      </a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="zuka-cv-reviewer.html">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">CV Reviewer</span>
+      </a>
+      <a class="nav-item" href="zuka-cover-letter.html">
+        <span class="nav-icon">✍️</span>
+        <span class="nav-label">Cover Letter</span>
+      </a>
+      <a class="nav-item" href="zuka-skill-gap.html">
+        <span class="nav-icon">🎯</span>
+        <span class="nav-label">Skill Gap</span>
+      </a>
+      <a class="nav-item" href="zuka-interview-prep.html">
+        <span class="nav-icon">🎤</span>
+        <span class="nav-label">Interview Prep</span>
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" href="zuka-dashboard.html">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">My Profile</span>
+      </a>
+      <a class="nav-item" href="zuka-dashboard.html">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="upgrade-card">
+        <p>Unlock unlimited AI tools with Premium</p>
+        <button class="upgrade-btn">Upgrade — $4/mo</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Good morning, Amara 👋</h2>
+        <p>Monday, 25 May 2026 · Your career journey is just beginning</p>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" placeholder="Search jobs, skills..."/>
+        </div>
+        <div class="notif-btn">
+          🔔
+          <div class="notif-dot"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <!-- WELCOME BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h1>Welcome to <span>ZUKA</span> — Now Let's Rise.</h1>
+          <p>Complete your setup to unlock your personalised job matches and AI tools.</p>
+        </div>
+        <div class="welcome-progress-wrap">
+          <div class="progress-label">Profile Complete</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-pct" id="progressPct">1 of 5 steps done</div>
+        </div>
+      </div>
+
+      <!-- CHECKLIST + STATS -->
+      <div class="grid-2">
+
+        <!-- ONBOARDING CHECKLIST -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Your Career Setup Checklist</div>
+              <div class="card-subtitle">Complete each step to unlock your full dashboard</div>
+            </div>
+            <div class="card-badge" id="checkBadge">1/5 Done</div>
+          </div>
+          <div class="card-body">
+            <ul class="checklist" id="checklist">
+              <li class="check-item done" data-step="0" onclick="toggleStep(0)">
+                <div class="check-circle">✓</div>
+                <div class="check-info">
+                  <div class="check-title">Create your account</div>
+                  <div class="check-desc">You're in — welcome to ZUKA</div>
+                </div>
+                <span class="check-action">Done ✓</span>
+              </li>
+              <li class="check-item active-step" data-step="1" onclick="toggleStep(1)">
+                <div class="check-circle">2</div>
+                <div class="check-info">
+                  <div class="check-title">Complete your profile</div>
+                  <div class="check-desc">Helps AI match you to the right jobs</div>
+                </div>
+                <span class="check-action">Start →</span>
+              </li>
+              <li class="check-item" data-step="2" onclick="toggleStep(2)">
+                <div class="check-circle">3</div>
+                <div class="check-info">
+                  <div class="check-title">Upload your CV for AI review</div>
+                  <div class="check-desc">Get instant professional feedback</div>
+                </div>
+                <span class="check-action">Upload →</span>
+              </li>
+              <li class="check-item" data-step="3" onclick="toggleStep(3)">
+                <div class="check-circle">4</div>
+                <div class="check-info">
+                  <div class="check-title">Browse jobs matched to you</div>
+                  <div class="check-desc">See remote jobs that fit your profile</div>
+                </div>
+                <span class="check-action">Browse →</span>
+              </li>
+              <li class="check-item" data-step="4" onclick="toggleStep(4)">
+                <div class="check-circle">5</div>
+                <div class="check-info">
+                  <div class="check-title">Generate your first cover letter</div>
+                  <div class="check-desc">AI writes it — you just apply</div>
+                </div>
+                <span class="check-action">Generate →</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- STATS + TIP -->
+        <div class="stats-col">
+          <div class="stat-card">
+            <div class="stat-icon-wrap bg-green">📋</div>
+            <div class="stat-info">
+              <div class="stat-val">0</div>
+              <div class="stat-lbl">CVs Reviewed</div>
+            </div>
+            <div class="stat-change">Get started →</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap bg-gold">✍️</div>
+            <div class="stat-info">
+              <div class="stat-val">0</div>
+              <div class="stat-lbl">Cover Letters Generated</div>
+            </div>
+            <div class="stat-change">3 free left</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap bg-dark">🎯</div>
+            <div class="stat-info">
+              <div class="stat-val">247</div>
+              <div class="stat-lbl">Remote Jobs Available Now</div>
+            </div>
+            <div class="stat-change">Updated today</div>
+          </div>
+          <div class="ai-tip">
+            <div class="tip-icon">🤖</div>
+            <div>
+              <div class="tip-label">Zuka AI Tip</div>
+              <div class="tip-text">Graduates who tailor their CV to each job description get <strong style="color:var(--gold-light)">3x more callbacks</strong>. Use our skill gap tool to find out exactly what to add.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MATCHED JOBS -->
+      <div class="section-head">
+        <h3>🌍 Remote Jobs Matched For You</h3>
+        <a class="see-all" href="#">See All Jobs →</a>
+      </div>
+      <div class="jobs-grid">
+
+        <div class="job-card">
+          <div class="job-top">
+            <div class="job-company-logo">💼</div>
+            <span class="job-save">🤍</span>
+          </div>
+          <div class="job-title">Junior Data Analyst</div>
+          <div class="job-company">DataBridge Africa · Remote</div>
+          <div class="job-tags">
+            <span class="job-tag tag-green">Remote</span>
+            <span class="job-tag tag-gold">Entry Level</span>
+            <span class="job-tag tag-gray">Excel · SQL</span>
+          </div>
+          <div class="job-footer">
+            <span class="job-salary">$800–$1,200/mo</span>
+            <span class="job-match">92% Match</span>
+          </div>
+          <button class="apply-btn">Apply with Zuka AI →</button>
+        </div>
+
+        <div class="job-card">
+          <div class="job-top">
+            <div class="job-company-logo">🖥️</div>
+            <span class="job-save">🤍</span>
+          </div>
+          <div class="job-title">Frontend Developer Intern</div>
+          <div class="job-company">TechNova Global · Remote</div>
+          <div class="job-tags">
+            <span class="job-tag tag-green">Remote</span>
+            <span class="job-tag tag-gold">Internship</span>
+            <span class="job-tag tag-gray">HTML · CSS · React</span>
+          </div>
+          <div class="job-footer">
+            <span class="job-salary">$600–$900/mo</span>
+            <span class="job-match">87% Match</span>
+          </div>
+          <button class="apply-btn">Apply with Zuka AI →</button>
+        </div>
+
+        <div class="job-card">
+          <div class="job-top">
+            <div class="job-company-logo">📣</div>
+            <span class="job-save">🤍</span>
+          </div>
+          <div class="job-title">Content & Social Media Writer</div>
+          <div class="job-company">CreativeHub · Remote</div>
+          <div class="job-tags">
+            <span class="job-tag tag-green">Remote</span>
+            <span class="job-tag tag-gold">Entry Level</span>
+            <span class="job-tag tag-gray">Writing · SEO</span>
+          </div>
+          <div class="job-footer">
+            <span class="job-salary">$500–$800/mo</span>
+            <span class="job-match">84% Match</span>
+          </div>
+          <button class="apply-btn">Apply with Zuka AI →</button>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  const steps = [true, false, false, false, false];
+
+  function updateProgress() {
+    const done = steps.filter(Boolean).length;
+    const pct = (done / 5) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = done + ' of 5 steps done';
+    document.getElementById('checkBadge').textContent = done + '/5 Done';
+  }
+
+  function toggleStep(index) {
+    if (index === 0) return;
+    steps[index] = !steps[index];
+    const items = document.querySelectorAll('.check-item');
+    items.forEach((item, i) => {
+      item.classList.remove('done', 'active-step');
+      const circle = item.querySelector('.check-circle');
+      const action = item.querySelector('.check-action');
+      if (steps[i]) {
+        item.classList.add('done');
+        circle.textContent = '✓';
+        action.textContent = 'Done ✓';
+      } else {
+        circle.textContent = i + 1;
+        action.textContent = i === 1 ? 'Start →' : i === 2 ? 'Upload →' : i === 3 ? 'Browse →' : 'Generate →';
+      }
+    });
+    const firstUndone = steps.findIndex(s => !s);
+    if (firstUndone !== -1) {
+      items[firstUndone].classList.add('active-step');
+      items[firstUndone].querySelector('.check-circle').textContent = firstUndone + 1;
+    }
+    updateProgress();
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZUKA — You Studied Hard. Now Rise.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #0B3D2E;
+      --green-mid: #145C42;
+      --green-light: #1E7A57;
+      --gold: #D4A017;
+      --gold-light: #F0C040;
+      --white: #FAFAF5;
+      --off-white: #F0EDE4;
+      --text-dark: #0B1F17;
+      --text-muted: #5A7268;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--white);
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 6%;
+      background: rgba(11, 61, 46, 0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(212,160,23,0.2);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 3px;
+    }
+    .logo span { color: var(--white); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none; font-size: 0.9rem;
+      font-weight: 500; letter-spacing: 0.5px;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-cta {
+      background: var(--gold);
+      color: var(--green) !important;
+      padding: 0.6rem 1.4rem !important;
+      border-radius: 4px;
+      font-weight: 600 !important;
+      transition: background 0.3s !important;
+    }
+    .nav-cta:hover { background: var(--gold-light) !important; color: var(--green) !important; }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      background: var(--green);
+      display: flex; align-items: center;
+      padding: 8rem 6% 5rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -100px; right: -100px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,160,23,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -50px; left: -50px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(30,122,87,0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content { max-width: 680px; z-index: 2; animation: fadeUp 0.9s ease both; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(212,160,23,0.15);
+      border: 1px solid rgba(212,160,23,0.4);
+      color: var(--gold-light);
+      font-size: 0.78rem; letter-spacing: 2px;
+      padding: 0.4rem 1rem; border-radius: 20px;
+      margin-bottom: 1.8rem; text-transform: uppercase;
+      font-weight: 500;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900; line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 .highlight {
+      color: var(--gold);
+      position: relative;
+      display: inline-block;
+    }
+    .hero-sub {
+      font-size: 1.15rem; line-height: 1.7;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 2.5rem;
+      max-width: 520px;
+      font-weight: 300;
+    }
+    .hero-sub strong { color: rgba(255,255,255,0.95); font-weight: 500; }
+    .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--green);
+      padding: 1rem 2.2rem;
+      border-radius: 4px; border: none;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.3s; letter-spacing: 0.3px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212,160,23,0.3);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      padding: 1rem 2.2rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.3);
+      font-size: 1rem; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.3s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    .hero-stats {
+      display: flex; gap: 3rem; margin-top: 4rem;
+      padding-top: 2.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      flex-wrap: wrap;
+    }
+    .stat-item { text-align: left; }
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700;
+      color: var(--gold); display: block;
+    }
+    .stat-label {
+      font-size: 0.82rem; color: rgba(255,255,255,0.55);
+      letter-spacing: 0.5px; margin-top: 0.2rem;
+    }
+
+    /* ─── SECTION BASE ─── */
+    section { padding: 6rem 6%; }
+    .section-label {
+      font-size: 0.78rem; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--gold);
+      font-weight: 600; margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 700; line-height: 1.2;
+      color: var(--text-dark); margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--text-muted);
+      line-height: 1.7; max-width: 520px;
+      font-weight: 300;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .how { background: var(--off-white); }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem; margin-top: 3.5rem;
+    }
+    .how-card {
+      background: var(--white);
+      border-radius: 8px; padding: 2.2rem;
+      border-left: 3px solid var(--gold);
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .how-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(11,61,46,0.1);
+    }
+    .step-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem; font-weight: 900;
+      color: rgba(212,160,23,0.15);
+      position: absolute; top: 1rem; right: 1.5rem;
+      line-height: 1;
+    }
+    .step-icon {
+      font-size: 2rem; margin-bottom: 1rem;
+    }
+    .how-card h3 {
+      font-size: 1.1rem; font-weight: 600;
+      color: var(--green); margin-bottom: 0.6rem;
+    }
+    .how-card p {
+      font-size: 0.9rem; color: var(--text-muted);
+      line-height: 1.6; font-weight: 300;
+    }
+
+    /* ─── FEATURES ─── */
+    .features { background: var(--white); }
+    .features-header { margin-bottom: 3.5rem; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--green);
+      border-radius: 8px; padding: 2rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+      overflow: hidden; position: relative;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(212,160,23,0.08);
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(11,61,46,0.2);
+    }
+    .feature-icon {
+      font-size: 1.8rem; margin-bottom: 1rem;
+    }
+    .feature-card h3 {
+      font-size: 1.05rem; font-weight: 600;
+      color: var(--white); margin-bottom: 0.6rem;
+    }
+    .feature-card p {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6; font-weight: 300;
+    }
+    .feature-tag {
+      display: inline-block; margin-top: 1rem;
+      font-size: 0.72rem; letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold); font-weight: 600;
+    }
+
+    /* ─── TESTIMONIALS ─── */
+    .testimonials { background: var(--green); }
+    .testimonials .section-title { color: var(--white); }
+    .testimonials .section-sub { color: rgba(255,255,255,0.6); }
+    .testimonials .section-label { color: var(--gold-light); }
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .testi-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 2rem;
+      transition: border-color 0.3s;
+    }
+    .testi-card:hover { border-color: rgba(212,160,23,0.4); }
+    .testi-quote {
+      font-size: 0.95rem; line-height: 1.7;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 1.5rem; font-weight: 300;
+      font-style: italic;
+    }
+    .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+    .testi-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--gold); display: flex;
+      align-items: center; justify-content: center;
+      font-weight: 700; color: var(--green); font-size: 0.9rem;
+    }
+    .testi-name {
+      font-weight: 600; color: var(--white);
+      font-size: 0.9rem;
+    }
+    .testi-role {
+      font-size: 0.78rem; color: rgba(255,255,255,0.45);
+    }
+
+    /* ─── PRICING ─── */
+    .pricing { background: var(--off-white); }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-top: 3.5rem; max-width: 800px;
+    }
+    .pricing-card {
+      background: var(--white); border-radius: 8px;
+      padding: 2.5rem; border: 2px solid transparent;
+      transition: all 0.3s; position: relative;
+    }
+    .pricing-card.featured {
+      border-color: var(--gold);
+      background: var(--green);
+    }
+    .featured-badge {
+      position: absolute; top: -12px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold); color: var(--green);
+      font-size: 0.72rem; font-weight: 700;
+      padding: 0.3rem 1rem; border-radius: 20px;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .plan-name {
+      font-size: 0.8rem; letter-spacing: 2px;
+      text-transform: uppercase; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .pricing-card.featured .plan-name { color: rgba(255,255,255,0.6); }
+    .plan-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem; font-weight: 700;
+      color: var(--green); margin-bottom: 0.3rem;
+    }
+    .pricing-card.featured .plan-price { color: var(--gold); }
+    .plan-period { font-size: 0.85rem; color: var(--text-muted); }
+    .pricing-card.featured .plan-period { color: rgba(255,255,255,0.5); }
+    .plan-features {
+      list-style: none; margin: 1.8rem 0 2rem;
+    }
+    .plan-features li {
+      font-size: 0.9rem; padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      color: var(--text-dark); display: flex;
+      align-items: center; gap: 0.5rem;
+      font-weight: 300;
+    }
+    .pricing-card.featured .plan-features li {
+      color: rgba(255,255,255,0.8);
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+    .check { color: var(--gold); font-weight: 700; }
+
+    /* ─── FINAL CTA ─── */
+    .final-cta {
+      background: var(--green);
+      text-align: center; padding: 7rem 6%;
+      position: relative; overflow: hidden;
+    }
+    .final-cta::before {
+      content: 'ZUKA';
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-size: 18rem; font-weight: 900;
+      color: rgba(255,255,255,0.03);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none; white-space: nowrap;
+      letter-spacing: 10px;
+    }
+    .final-cta .section-label { color: var(--gold-light); }
+    .final-cta .section-title { color: var(--white); margin: 0 auto 1rem; }
+    .final-cta .section-sub { color: rgba(255,255,255,0.6); margin: 0 auto 2.5rem; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--text-dark);
+      padding: 3rem 6%;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 900;
+      color: var(--gold); letter-spacing: 2px;
+    }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .footer-links a {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.82rem; text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-stats { gap: 1.5rem; }
+      .pricing-grid { max-width: 100%; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">ZU<span>KA</span></div>
+  <ul class="nav-links">
+    <li><a href="zuka-dashboard.html#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="zuka-dashboard.html" class="nav-cta">Get Started Free</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🌍 Built for African Graduates</div>
+    <h1>You Studied Hard.<br><span class="highlight">Now Rise.</span></h1>
+    <p class="hero-sub">
+      <strong>Zuka finds it, prepares you for it, and helps you land it</strong> —
+      AI doing the heavy lifting for you. Real remote jobs. Real results.
+    </p>
+    <div class="hero-buttons">
+      <a href="zuka-dashboard.html" class="btn-primary">Start For Free →</a>
+      <a href="zuka-dashboard.html#how" class="btn-secondary">See How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number">10K+</span>
+        <span class="stat-label">Remote Jobs Listed</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">AI</span>
+        <span class="stat-label">Powered CV Review</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">Free</span>
+        <span class="stat-label">To Get Started</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <p class="section-label">The Process</p>
+  <h2 class="section-title">Three Steps to Your First Job</h2>
+  <p class="section-sub">No guessing. No confusion. Zuka walks you through everything — step by step.</p>
+  <div class="how-grid">
+    <div class="how-card">
+      <span class="step-number">01</span>
+      <div class="step-icon">🔍</div>
+      <h3>Zuka Finds It</h3>
+      <p>Browse thousands of real remote job listings updated daily. Filter by skill, salary, and location. No fake jobs. No scams.</p>
+    </div>
+    <div class="how-card">
+      <span class="step-number">02</span>
+      <div class="step-icon">🧠</div>
+      <h3>AI Prepares You</h3>
+      <p>Upload your CV and let AI review it. Discover your skill gaps. Generate a perfect cover letter for any job in seconds.</p>
+    </div>
+    <div class="how-card">
+      <span class="step-number">03</span>
+      <div class="step-icon">🚀</div>
+      <h3>You Land It</h3>
+      <p>Walk into every interview prepared. Zuka generates likely questions for your specific role and helps you answer confidently.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header">
+    <p class="section-label">What Zuka Offers</p>
+    <h2 class="section-title">Everything You Need.<br>Nothing You Don't.</h2>
+    <p class="section-sub">Built specifically for graduates who are ready to work but need the right tools to get there.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>AI CV Reviewer</h3>
+      <p>Upload your CV and get instant professional feedback. Know exactly what to fix and why.</p>
+      <span class="feature-tag">★ Most Used</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✍️</div>
+      <h3>Cover Letter Generator</h3>
+      <p>One click. AI writes a tailored, professional cover letter for any job you apply to.</p>
+      <span class="feature-tag">AI Powered</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Skill Gap Analyzer</h3>
+      <p>Pick a job. AI tells you exactly what skills you're missing and how to get them fast.</p>
+      <span class="feature-tag">Smart Insights</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎤</div>
+      <h3>Interview Prep</h3>
+      <p>Practice with AI-generated interview questions specific to the job role you want.</p>
+      <span class="feature-tag">Confidence Builder</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Live Remote Jobs</h3>
+      <p>Real job listings updated daily from verified sources. Filter by role, skill, and salary.</p>
+      <span class="feature-tag">Updated Daily</span>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <p class="section-label">Real Stories</p>
+  <h2 class="section-title">Graduates Who Rose</h2>
+  <p class="section-sub">They were where you are. Now they're working remotely from home.</p>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <p class="testi-quote">"I graduated with a Business degree and had no idea how to write a CV. Zuka reviewed mine and within 2 weeks I had three interview calls."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">AM</div>
+        <div>
+          <div class="testi-name">Amara M.</div>
+          <div class="testi-role">Fresh Graduate, Nigeria</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <p class="testi-quote">"The cover letter generator saved me hours. I applied to 10 jobs in one afternoon. I got hired for a remote role I never thought I'd qualify for."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">KO</div>
+        <div>
+          <div class="testi-name">Kofi O.</div>
+          <div class="testi-role">IT Graduate, Ghana</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <p class="testi-quote">"The skill gap feature showed me exactly what I needed to learn. I took one short course and landed a junior developer role remotely."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">FN</div>
+        <div>
+          <div class="testi-name">Fatima N.</div>
+          <div class="testi-role">CS Graduate, Kenya</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <p class="section-label">Simple Pricing</p>
+  <h2 class="section-title">Start Free. Upgrade When Ready.</h2>
+  <p class="section-sub">No credit card needed to get started. Pay only when you're ready to go full power.</p>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0</div>
+      <div class="plan-period">Forever free</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Browse all job listings</li>
+        <li><span class="check">✓</span> 3 AI CV reviews per month</li>
+        <li><span class="check">✓</span> 3 cover letters per month</li>
+        <li><span class="check">✓</span> Basic skill gap analysis</li>
+        <li><span class="check">✓</span> 5 interview questions</li>
+      </ul>
+      <a href="zuka-dashboard.html" class="btn-secondary" style="display:block;text-align:center;border-color:#0B3D2E;color:#0B3D2E;">Get Started Free</a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="featured-badge">Most Popular</div>
+      <div class="plan-name">Premium</div>
+      <div class="plan-price">$4</div>
+      <div class="plan-period">per month</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Everything in Free</li>
+        <li><span class="check">✓</span> Unlimited AI CV reviews</li>
+        <li><span class="check">✓</span> Unlimited cover letters</li>
+        <li><span class="check">✓</span> Deep skill gap analysis</li>
+        <li><span class="check">✓</span> Full interview prep</li>
+        <li><span class="check">✓</span> Priority job alerts</li>
+      </ul>
+      <a href="zuka-dashboard.html" class="btn-primary" style="display:block;text-align:center;">Upgrade to Premium</a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta" id="signup">
+  <p class="section-label">Your Moment Is Now</p>
+  <h2 class="section-title">You've Done The Hard Part.<br>Let Zuka Do The Rest.</h2>
+  <p class="section-sub">Join thousands of African graduates already using Zuka to find real remote jobs and build real careers.</p>
+  <a href="zuka-dashboard.html" class="btn-primary" style="font-size:1.1rem;padding:1.1rem 2.8rem;">Create Your Free Account →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ZUKA</div>
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Features</a>
+    <a href="#">Pricing</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 Zuka. Built for African Graduates.</div>
+</footer>
+
+</body>
+</html>

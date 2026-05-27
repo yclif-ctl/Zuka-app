@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZUKA - Interview Prep</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --green:#0B3D2E;--green-mid:#145C42;--green-light:#1E7A57;--green-pale:#EAF4EF;
+      --gold:#D4A017;--gold-light:#F0C040;--gold-pale:#FDF6E3;
+      --white:#FAFAF5;--off-white:#F3F0E8;--text-dark:#0B1F17;--text-muted:#6B7F75;
+      --border:#E4E1D8;--red:#C0392B;--red-pale:#FDECEA;
+      --blue:#2E4FD4;--blue-pale:#EEF2FF;--purple:#7B2FBE;--purple-pale:#F3EEFF;
+      --sidebar-w:260px
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--text-dark);overflow-x:hidden}
+    .app{display:flex;min-height:100vh}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar-w);background:var(--green);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:50;border-right:1px solid rgba(255,255,255,0.06)}
+    .sidebar-logo{padding:1.8rem 1.6rem 1.4rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .logo-text{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--gold);letter-spacing:3px}
+    .logo-tagline{font-size:0.68rem;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:0.2rem;text-transform:uppercase}
+    .sidebar-user{padding:1.2rem 1.6rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:0.8rem}
+    .user-avatar{width:38px;height:38px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green);font-size:0.85rem}
+    .user-name{font-size:0.88rem;font-weight:600;color:var(--white)}
+    .user-plan{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:0.1rem}
+    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
+    .nav-label-section{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:0.8rem 1.6rem 0.4rem;font-weight:600}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1.6rem;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;text-decoration:none}
+    .nav-item:hover{background:rgba(255,255,255,0.06);border-left-color:rgba(212,160,23,0.4)}
+    .nav-item.active{background:rgba(212,160,23,0.12);border-left-color:var(--gold)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .nav-label{font-size:0.88rem;color:rgba(255,255,255,0.7);font-weight:400}
+    .nav-item.active .nav-label{color:var(--white);font-weight:500}
+    .sidebar-footer{padding:1rem 1.6rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .upgrade-card{background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.25);border-radius:6px;padding:1rem}
+    .upgrade-card p{font-size:0.78rem;color:rgba(255,255,255,0.65);margin-bottom:0.6rem;line-height:1.4}
+    .upgrade-btn{background:var(--gold);color:var(--green);border:none;border-radius:4px;padding:0.45rem 1rem;font-size:0.78rem;font-weight:700;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .upgrade-btn:hover{background:var(--gold-light)}
+
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+    .topbar-left h2{font-size:1rem;font-weight:600;color:var(--text-dark)}
+    .topbar-left p{font-size:0.78rem;color:var(--text-muted);margin-top:0.1rem}
+    .plan-badge{font-size:0.75rem;font-weight:600;padding:0.3rem 0.8rem;border-radius:20px}
+    .badge-free{background:var(--gold-pale);border:1px solid rgba(212,160,23,0.3);color:#8B6200}
+    .badge-premium{background:var(--green-pale);border:1px solid rgba(30,122,87,0.3);color:var(--green-mid)}
+
+    /* CONTENT */
+    .content{padding:2rem;flex:1;max-width:960px}
+
+    /* PAGE HEADER */
+    .page-header{background:var(--green);border-radius:10px;padding:1.8rem 2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.2rem;position:relative;overflow:hidden;animation:fadeUp 0.5s ease both}
+    .page-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(212,160,23,0.12) 0%,transparent 70%)}
+    .header-icon{width:56px;height:56px;border-radius:10px;background:rgba(212,160,23,0.15);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+    .header-text h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--white)}
+    .header-text p{font-size:0.85rem;color:rgba(255,255,255,0.6);margin-top:0.3rem;font-weight:300}
+    .header-limit{margin-left:auto;text-align:right;flex-shrink:0}
+    .limit-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1}
+    .limit-lbl{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:0.2rem}
+
+    /* TIP */
+    .tip-card{background:var(--green);border-radius:10px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:0.9rem;animation:fadeUp 0.5s ease 0.1s both}
+    .tip-icon{font-size:1.3rem;flex-shrink:0}
+    .tip-label{font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:0.3rem}
+    .tip-text{font-size:0.83rem;color:rgba(255,255,255,0.72);line-height:1.6;font-weight:300}
+
+    /* FORM */
+    .card{background:var(--white);border-radius:10px;border:1px solid var(--border);margin-bottom:1.5rem;animation:fadeUp 0.5s ease 0.1s both}
+    .card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border)}
+    .card-title{font-size:0.92rem;font-weight:600;color:var(--text-dark)}
+    .card-sub{font-size:0.75rem;color:var(--text-muted);margin-top:0.2rem}
+    .card-body{padding:1.5rem}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+    .form-group{margin-bottom:1rem}
+    .form-label{font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:0.4rem;display:block}
+    .form-input,.form-select,.form-textarea{width:100%;padding:0.7rem 0.9rem;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text-dark);background:var(--off-white);outline:none;transition:border-color 0.2s,background 0.2s}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--gold);background:var(--white)}
+    .form-textarea{min-height:90px;resize:vertical;line-height:1.6}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--text-muted);font-weight:300}
+
+    /* CATEGORY PILLS */
+    .cat-grid{display:flex;flex-wrap:wrap;gap:0.5rem}
+    .cat-pill{padding:0.5rem 1rem;border-radius:20px;border:1.5px solid var(--border);font-size:0.8rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--text-muted);transition:all 0.2s}
+    .cat-pill:hover{border-color:var(--gold);color:var(--text-dark)}
+    .cat-pill.selected{border-color:var(--green);background:var(--green-pale);color:var(--green);font-weight:600}
+
+    /* GENERATE BTN */
+    .generate-btn{width:100%;padding:1rem;background:var(--green);color:var(--white);border:none;border-radius:7px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;margin-top:0.5rem;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+    .generate-btn:hover{background:var(--green-light);transform:translateY(-1px);box-shadow:0 6px 20px rgba(11,61,46,0.2)}
+
+    /* LOADING */
+    .loading-state{display:none;text-align:center;padding:3rem 2rem;background:var(--white);border-radius:10px;border:1px solid var(--border);margin-bottom:1.5rem}
+    .loading-state.visible{display:block}
+    .spinner{width:48px;height:48px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--gold);animation:spin 0.8s linear infinite;margin:0 auto 1.2rem}
+    .loading-title{font-size:1rem;font-weight:600;color:var(--text-dark);margin-bottom:0.4rem}
+    .loading-sub{font-size:0.85rem;color:var(--text-muted);font-weight:300}
+
+    /* RESULTS */
+    .results-section{display:none;animation:fadeUp 0.6s ease both}
+    .results-section.visible{display:block}
+
+    /* SUMMARY BANNER */
+    .summary-banner{background:var(--green);border-radius:10px;padding:1.8rem 2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap}
+    .summary-icon{font-size:3rem;flex-shrink:0}
+    .summary-text h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--white)}
+    .summary-text p{font-size:0.85rem;color:rgba(255,255,255,0.6);margin-top:0.3rem;font-weight:300}
+    .summary-stats{margin-left:auto;display:flex;gap:1.5rem;flex-shrink:0}
+    .stat-box{text-align:center}
+    .stat-box-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1}
+    .stat-box-lbl{font-size:0.68rem;color:rgba(255,255,255,0.4);margin-top:0.2rem}
+
+    /* TABS */
+    .tab-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
+    .tab-btn{padding:0.5rem 1.1rem;border-radius:6px;border:1.5px solid var(--border);font-size:0.82rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text-muted);transition:all 0.2s}
+    .tab-btn:hover{border-color:var(--gold)}
+    .tab-btn.active{background:var(--green);color:var(--white);border-color:var(--green);font-weight:600}
+
+    /* QUESTION CARDS */
+    .questions-list{display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem}
+    .q-card{background:var(--white);border-radius:10px;border:1px solid var(--border);overflow:hidden;transition:border-color 0.2s}
+    .q-card:hover{border-color:rgba(212,160,23,0.4)}
+    .q-header{padding:1.2rem 1.5rem;display:flex;align-items:flex-start;gap:1rem;cursor:pointer;user-select:none}
+    .q-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+    .num-green{background:var(--green-pale);color:var(--green-mid)}
+    .num-gold{background:var(--gold-pale);color:#8B6200}
+    .num-blue{background:var(--blue-pale);color:var(--blue)}
+    .num-purple{background:var(--purple-pale);color:var(--purple)}
+    .num-red{background:var(--red-pale);color:var(--red)}
+    .q-body{flex:1}
+    .q-cat{font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:0.3rem}
+    .cat-Behavioural{color:var(--green-mid)}
+    .cat-Technical{color:var(--blue)}
+    .cat-Situational{color:var(--purple)}
+    .cat-Motivational{color:#8B6200}
+    .cat-Curveball{color:var(--red)}
+    .q-text{font-size:0.92rem;font-weight:500;color:var(--text-dark);line-height:1.5}
+    .q-arrow{font-size:0.8rem;color:var(--text-muted);flex-shrink:0;margin-top:0.2rem;transition:transform 0.3s}
+    .q-card.open .q-arrow{transform:rotate(180deg)}
+
+    /* ANSWER PANEL */
+    .q-answer{display:none;border-top:1px solid var(--border)}
+    .q-card.open .q-answer{display:block}
+
+    /* LOADING INSIDE QUESTION */
+    .q-loading{padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem;font-weight:300}
+    .q-loading .mini-spinner{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--gold);animation:spin 0.8s linear infinite;margin:0 auto 0.5rem}
+
+    /* ANSWER TABS */
+    .ans-tabs{display:flex;border-bottom:1px solid var(--border)}
+    .ans-tab{padding:0.7rem 1.2rem;font-size:0.78rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);transition:all 0.2s;background:none;border-left:none;border-right:none;border-top:none;font-family:'DM Sans',sans-serif}
+    .ans-tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+    .ans-content{padding:1.2rem 1.5rem}
+    .ans-panel{display:none}
+    .ans-panel.active{display:block}
+
+    /* STAR METHOD */
+    .star-grid{display:flex;flex-direction:column;gap:0.8rem}
+    .star-row{display:flex;gap:0.8rem;align-items:flex-start}
+    .star-dot{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0;color:var(--white)}
+    .dot-s{background:var(--blue)}
+    .dot-t{background:var(--purple)}
+    .dot-a{background:var(--gold);color:var(--green)}
+    .dot-r{background:var(--green-light)}
+    .star-info-label{font-size:0.7rem;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.2rem}
+    .star-info-text{font-size:0.85rem;color:var(--text-dark);line-height:1.6;font-weight:300}
+
+    /* TIP BOX */
+    .tip-box{padding:0.9rem 1rem;border-radius:0 6px 6px 0;margin-top:0.5rem}
+    .tip-box-gold{background:var(--gold-pale);border-left:3px solid var(--gold)}
+    .tip-box-blue{background:var(--blue-pale);border-left:3px solid var(--blue)}
+    .tip-box-label{font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.3rem}
+    .label-gold{color:#8B6200}
+    .label-blue{color:var(--blue)}
+    .tip-box-text{font-size:0.85rem;color:var(--text-dark);line-height:1.5;font-weight:300}
+
+    /* PREMIUM GATE */
+    .premium-gate{background:var(--green);border-radius:8px;padding:1.2rem;margin-top:0.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .premium-gate-text{font-size:0.82rem;color:rgba(255,255,255,0.8);font-weight:300;line-height:1.5}
+    .premium-gate-text strong{color:var(--gold)}
+    .premium-gate-btn{background:var(--gold);color:var(--green);border:none;border-radius:5px;padding:0.5rem 1.1rem;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background 0.2s}
+    .premium-gate-btn:hover{background:var(--gold-light)}
+
+    /* PRACTICE */
+    .practice-card{background:var(--white);border-radius:10px;border:1px solid var(--border);margin-bottom:1.5rem;overflow:hidden}
+    .practice-header{background:var(--green);padding:1.2rem 1.5rem}
+    .practice-header h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--white)}
+    .practice-header p{font-size:0.78rem;color:rgba(255,255,255,0.55);margin-top:0.2rem}
+    .practice-body{padding:1.5rem}
+    .practice-q{font-size:0.95rem;font-weight:500;color:var(--text-dark);line-height:1.5;margin-bottom:1rem;padding:1rem;background:var(--green-pale);border-radius:7px;border-left:3px solid var(--green-light)}
+    .practice-area{width:100%;min-height:110px;padding:0.9rem;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text-dark);resize:vertical;outline:none;background:var(--off-white);line-height:1.6;transition:border-color 0.2s}
+    .practice-area:focus{border-color:var(--gold);background:var(--white)}
+    .practice-area::placeholder{color:var(--text-muted);font-weight:300}
+    .practice-btns{display:flex;gap:0.8rem;margin-top:1rem;flex-wrap:wrap}
+    .pbtn{padding:0.7rem 1.2rem;border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;border:none;display:flex;align-items:center;gap:0.4rem}
+    .pbtn-green{background:var(--green);color:var(--white)}
+    .pbtn-green:hover{background:var(--green-light)}
+    .pbtn-outline{background:transparent;color:var(--green);border:1.5px solid var(--green)}
+    .pbtn-outline:hover{background:var(--green-pale)}
+    .feedback-box{display:none;margin-top:1rem;padding:1rem;border-radius:7px;border:1px solid var(--border);background:var(--off-white);font-size:0.85rem;line-height:1.6;color:var(--text-dark);font-weight:300}
+    .feedback-box.visible{display:block;animation:fadeUp 0.4s ease both}
+
+    /* ACTION ROW */
+    .action-row{display:flex;gap:1rem;flex-wrap:wrap}
+    .action-btn{flex:1;padding:0.85rem 1rem;border-radius:7px;font-size:0.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.25s;border:none;display:flex;align-items:center;justify-content:center;gap:0.4rem}
+    .abtn-green{background:var(--green);color:var(--white)}
+    .abtn-green:hover{background:var(--green-light)}
+    .abtn-outline{background:transparent;color:var(--green);border:1.5px solid var(--green)}
+    .abtn-outline:hover{background:var(--green-pale)}
+
+    /* PRACTICE THIS BTN inside answer panel */
+    .practice-this-btn{margin-top:1rem;padding:0.6rem 1.2rem;background:var(--green);color:white;border:none;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .practice-this-btn:hover{background:var(--green-light)}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.two-col{grid-template-columns:1fr}.summary-stats{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">ZUKA</div>
+      <div class="logo-tagline">AI Career Launchpad</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">AM</div>
+      <div>
+        <div class="user-name">Amara Mensah</div>
+        <div class="user-plan" id="sidebarPlan">Free Plan</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label-section">Main</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">&#127968;</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="zuka-jobs.html"><span class="nav-icon">&#127760;</span><span class="nav-label">Browse Jobs</span></a>
+      <div class="nav-label-section">AI Tools</div>
+      <a class="nav-item" href="zuka-cv-reviewer.html"><span class="nav-icon">&#128196;</span><span class="nav-label">CV Reviewer</span></a>
+      <a class="nav-item" href="zuka-cover-letter.html"><span class="nav-icon">&#9997;</span><span class="nav-label">Cover Letter</span></a>
+      <a class="nav-item" href="zuka-skill-gap.html"><span class="nav-icon">&#127919;</span><span class="nav-label">Skill Gap</span></a>
+      <a class="nav-item active" href="zuka-interview-prep.html"><span class="nav-icon">&#127908;</span><span class="nav-label">Interview Prep</span></a>
+      <div class="nav-label-section">Account</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">&#128100;</span><span class="nav-label">My Profile</span></a>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">&#9881;</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="upgrade-card">
+        <p>Unlock Premium for Sonnet-powered deeper answers</p>
+        <button class="upgrade-btn" onclick="togglePlan()">Upgrade - $4/mo</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Interview Prep</h2>
+        <p>AI generates tailored questions with coaching, STAR guides and model answers</p>
+      </div>
+      <span class="plan-badge badge-free" id="planBadge">Free Plan</span>
+    </header>
+
+    <main class="content">
+      <div class="page-header">
+        <div class="header-icon">&#127908;</div>
+        <div class="header-text">
+          <h1>Interview Prep</h1>
+          <p>Questions load instantly. Click any question to reveal coaching, STAR method and a model answer.</p>
+        </div>
+        <div class="header-limit">
+          <div class="limit-val">3</div>
+          <div class="limit-lbl">Sessions left</div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">&#128161;</div>
+        <div>
+          <div class="tip-label">Zuka Pro Tip</div>
+          <div class="tip-text">Most candidates fail interviews not because they lack skills but because they cannot communicate what they know. Practice here until your answers feel natural and confident.</div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="card" id="formSection">
+        <div class="card-header">
+          <div class="card-title">Set Up Your Interview Session</div>
+          <div class="card-sub">Fill in your details for tailored questions</div>
+        </div>
+        <div class="card-body">
+          <div class="two-col">
+            <div class="form-group">
+              <label class="form-label">Job Title *</label>
+              <input class="form-input" id="jobTitle" type="text" placeholder="e.g. Junior Data Analyst"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Name</label>
+              <input class="form-input" id="companyName" type="text" placeholder="e.g. DataBridge Africa"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Background *</label>
+            <textarea class="form-textarea" id="background" placeholder="e.g. Diploma in Business Administration. Skills: Excel, communication, customer service. Managed school club social media for 2 years..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Job Description (paste key parts)</label>
+            <textarea class="form-textarea" id="jobDesc" placeholder="Paste job requirements here for more tailored questions..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Question Categories *</label>
+            <div class="cat-grid" id="catGrid">
+              <button class="cat-pill selected" onclick="toggleCat(this,'Behavioural')">Behavioural</button>
+              <button class="cat-pill selected" onclick="toggleCat(this,'Technical')">Technical</button>
+              <button class="cat-pill selected" onclick="toggleCat(this,'Situational')">Situational</button>
+              <button class="cat-pill selected" onclick="toggleCat(this,'Motivational')">Motivational</button>
+              <button class="cat-pill" onclick="toggleCat(this,'Curveball')">Curveball</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty Level</label>
+            <select class="form-select" id="difficulty">
+              <option value="Entry Level fresh graduate">Entry Level - Fresh Graduate</option>
+              <option value="Junior Level 1-2 years">Junior Level - 1 to 2 years</option>
+              <option value="Mid Level 3-5 years">Mid Level - 3 to 5 years</option>
+            </select>
+          </div>
+          <button class="generate-btn" onclick="generateQuestions()">Generate My Interview Questions</button>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-title">Generating your questions...</div>
+        <div class="loading-sub">This takes about 8 seconds. Details load when you open each question.</div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="results-section" id="resultsSection">
+        <div class="summary-banner">
+          <div class="summary-icon">&#127908;</div>
+          <div class="summary-text">
+            <h2 id="summaryTitle">Your Interview is Ready</h2>
+            <p id="summaryDesc">Click any question below to reveal coaching and model answers.</p>
+          </div>
+          <div class="summary-stats">
+            <div class="stat-box">
+              <div class="stat-box-val" id="qCount">0</div>
+              <div class="stat-box-lbl">Questions</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val" id="catCount">0</div>
+              <div class="stat-box-lbl">Categories</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-row" id="tabRow"></div>
+        <div class="questions-list" id="questionsList"></div>
+
+        <!-- PRACTICE -->
+        <div class="practice-card" id="practiceCard">
+          <div class="practice-header">
+            <h3>Practice Mode</h3>
+            <p>Click "Practice This" on any question then type your answer for AI coaching feedback.</p>
+          </div>
+          <div class="practice-body">
+            <div class="practice-q" id="practiceQ">Click "Practice This" on any question above to start.</div>
+            <textarea class="practice-area" id="practiceAnswer" placeholder="Type your answer here as if speaking to the interviewer..."></textarea>
+            <div class="practice-btns">
+              <button class="pbtn pbtn-green" onclick="getFeedback()">Get AI Feedback</button>
+              <button class="pbtn pbtn-outline" onclick="clearPractice()">Clear</button>
+            </div>
+            <div class="feedback-box" id="feedbackBox"></div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="action-btn abtn-green" onclick="resetForm()">New Session</button>
+          <button class="action-btn abtn-outline" onclick="printQuestions()">Print Questions</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+var selectedCats = new Set(['Behavioural','Technical','Situational','Motivational']);
+var allQuestions = [];
+var displayQuestions = [];
+var currentPracticeQ = '';
+var isPremium = false;
+
+var numColors = {
+  'Behavioural':'num-green',
+  'Technical':'num-blue',
+  'Situational':'num-purple',
+  'Motivational':'num-gold',
+  'Curveball':'num-red'
+};
+
+function togglePlan() {
+  isPremium = !isPremium;
+  document.getElementById('planBadge').textContent = isPremium ? 'Premium Plan' : 'Free Plan';
+  document.getElementById('planBadge').className = isPremium ? 'plan-badge badge-premium' : 'plan-badge badge-free';
+  document.getElementById('sidebarPlan').textContent = isPremium ? 'Premium Plan' : 'Free Plan';
+  alert(isPremium ? 'Premium activated. You now get Sonnet-powered answers.' : 'Switched back to Free Plan.');
+}
+
+function toggleCat(btn, cat) {
+  if (selectedCats.has(cat)) {
+    selectedCats.delete(cat);
+    btn.classList.remove('selected');
+  } else {
+    selectedCats.add(cat);
+    btn.classList.add('selected');
+  }
+}
+
+function getVal(id) {
+  return document.getElementById(id).value.trim();
+}
+
+async function generateQuestions() {
+  var jobTitle = getVal('jobTitle');
+  var background = getVal('background');
+  if (!jobTitle || !background || selectedCats.size === 0) {
+    alert('Please fill in the required fields and select at least one category.');
+    return;
+  }
+
+  var companyName = getVal('companyName');
+  var jobDesc = getVal('jobDesc');
+  var difficulty = document.getElementById('difficulty').value;
+  var cats = Array.from(selectedCats).join(', ');
+
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('resultsSection').classList.remove('visible');
+
+  var prompt = 'You are ZUKA interview coach for fresh African graduates. Generate interview questions. Respond ONLY with valid JSON, no markdown, no backticks, no extra text.\n\nCANDIDATE: ' + background + '\nROLE: ' + jobTitle + ' at ' + (companyName || 'the company') + '\nDIFFICULTY: ' + difficulty + '\nCATEGORIES: ' + cats + '\nJOB DESC: ' + (jobDesc || 'not provided') + '\n\nReturn this exact JSON structure:\n{"sessionTitle":"<role at company>","sessionDesc":"<one coaching sentence>","questions":[{"id":1,"category":"<category>","question":"<question text>"},{"id":2,"category":"<category>","question":"<question text>"},{"id":3,"category":"<category>","question":"<question text>"},{"id":4,"category":"<category>","question":"<question text>"},{"id":5,"category":"<category>","question":"<question text>"}]}\n\nGenerate 1 question per selected category, maximum 5 total. Keep question text under 20 words each. Category must be one of: ' + cats;
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    var data = await response.json();
+    var raw = data.content.map(function(item) { return item.text || ''; }).join('');
+    var clean = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+    var result = JSON.parse(clean);
+
+    allQuestions = result.questions;
+    document.getElementById('loadingState').classList.remove('visible');
+    renderResults(result);
+
+  } catch (err) {
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('formSection').style.display = 'block';
+    console.error('Generate error:', err);
+    alert('Could not load questions. Please try again.');
+  }
+}
+
+function renderResults(r) {
+  document.getElementById('summaryTitle').textContent = r.sessionTitle || 'Your Interview is Ready';
+  document.getElementById('summaryDesc').textContent = r.sessionDesc || 'Click any question to reveal coaching and model answers.';
+  document.getElementById('qCount').textContent = r.questions.length;
+  var uniqueCats = [];
+  r.questions.forEach(function(q) {
+    if (uniqueCats.indexOf(q.category) === -1) uniqueCats.push(q.category);
+  });
+  document.getElementById('catCount').textContent = uniqueCats.length;
+
+  var tabs = ['All'].concat(uniqueCats);
+  document.getElementById('tabRow').innerHTML = tabs.map(function(t) {
+    return '<button class="tab-btn' + (t === 'All' ? ' active' : '') + '" onclick="filterQuestions(\'' + t + '\', this)">' + t + '<\/button>';
+  }).join('');
+
+  displayQuestions = r.questions.slice();
+  renderQuestions(displayQuestions);
+  document.getElementById('resultsSection').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderQuestions(questions) {
+  displayQuestions = questions;
+  document.getElementById('questionsList').innerHTML = questions.map(function(q, i) {
+    var numClass = numColors[q.category] || 'num-green';
+    return '<div class="q-card" id="qcard-' + i + '">' +
+      '<div class="q-header" onclick="toggleQuestion(' + i + ')">' +
+        '<div class="q-num ' + numClass + '">' + (i + 1) + '<\/div>' +
+        '<div class="q-body">' +
+          '<div class="q-cat cat-' + q.category + '">' + q.category + '<\/div>' +
+          '<div class="q-text">' + q.question + '<\/div>' +
+        '<\/div>' +
+        '<div class="q-arrow">&#9660;<\/div>' +
+      '<\/div>' +
+      '<div class="q-answer" id="qanswer-' + i + '">' +
+        '<div class="q-loading" id="qloading-' + i + '"><div class="mini-spinner"><\/div>Loading coaching...<\/div>' +
+        '<div id="qcontent-' + i + '" style="display:none"><\/div>' +
+      '<\/div>' +
+    '<\/div>';
+  }).join('');
+}
+
+function toggleQuestion(i) {
+  var card = document.getElementById('qcard-' + i);
+  var isOpen = card.classList.contains('open');
+  if (isOpen) {
+    card.classList.remove('open');
+  } else {
+    card.classList.add('open');
+    var content = document.getElementById('qcontent-' + i);
+    if (content.innerHTML === '') {
+      loadAnswerForQuestion(i);
+    }
+  }
+}
+
+async function loadAnswerForQuestion(i) {
+  var q = displayQuestions[i];
+  if (!q) return;
+
+  var model = isPremium ? 'claude-sonnet-4-20250514' : 'claude-haiku-4-5';
+  var jobTitle = getVal('jobTitle') || 'this role';
+  var background = getVal('background') || 'fresh graduate';
+
+  var prompt = 'You are ZUKA interview coach. Give coaching for this interview question. Respond ONLY with valid JSON, no markdown, no backticks.\n\nQuestion: ' + q.question + '\nCategory: ' + q.category + '\nRole: ' + jobTitle + '\nCandidate background: ' + background + '\n\nReturn this exact JSON:\n{"situation":"<how to frame situation in 1 sentence>","task":"<what task to describe in 1 sentence>","action":"<what action to mention in 1 sentence>","result":"<what result to highlight in 1 sentence>","modelAnswer":"<2-3 sentence confident answer they can adapt>","interviewerTip":"<what interviewer is testing in 1 sentence>","commonMistake":"<most common mistake in 1 sentence>"}';
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    var data = await response.json();
+    var raw = data.content.map(function(item) { return item.text || ''; }).join('');
+    var clean = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+    var ans = JSON.parse(clean);
+
+    var premiumBadge = isPremium ? '<span style="background:var(--gold);color:var(--green);font-size:0.65rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:10px;margin-left:0.5rem;">SONNET<\/span>' : '';
+
+    var html = '<div class="ans-tabs">' +
+      '<button class="ans-tab active" onclick="switchAnsTab(event,' + i + ',\'star-' + i + '\')">STAR Method<\/button>' +
+      '<button class="ans-tab" onclick="switchAnsTab(event,' + i + ',\'model-' + i + '\')">Model Answer' + premiumBadge + '<\/button>' +
+      '<button class="ans-tab" onclick="switchAnsTab(event,' + i + ',\'tips-' + i + '\')">Coaching Tips<\/button>' +
+    '<\/div>' +
+    '<div class="ans-content">' +
+      '<div class="ans-panel active" id="star-' + i + '">' +
+        '<div class="star-grid">' +
+          '<div class="star-row"><div class="star-dot dot-s">S<\/div><div><div class="star-info-label">Situation<\/div><div class="star-info-text">' + ans.situation + '<\/div><\/div><\/div>' +
+          '<div class="star-row"><div class="star-dot dot-t">T<\/div><div><div class="star-info-label">Task<\/div><div class="star-info-text">' + ans.task + '<\/div><\/div><\/div>' +
+          '<div class="star-row"><div class="star-dot dot-a">A<\/div><div><div class="star-info-label">Action<\/div><div class="star-info-text">' + ans.action + '<\/div><\/div><\/div>' +
+          '<div class="star-row"><div class="star-dot dot-r">R<\/div><div><div class="star-info-label">Result<\/div><div class="star-info-text">' + ans.result + '<\/div><\/div><\/div>' +
+        '<\/div>' +
+      '<\/div>' +
+      '<div class="ans-panel" id="model-' + i + '">' +
+        '<div class="tip-box tip-box-gold"><div class="tip-box-label label-gold">Model Answer - Adapt to your own experience<\/div><div class="tip-box-text">' + ans.modelAnswer + '<\/div><\/div>' +
+        '<button class="practice-this-btn" onclick="practiceThis(' + i + ')">Practice This Question<\/button>' +
+      '<\/div>' +
+      '<div class="ans-panel" id="tips-' + i + '">' +
+        '<div class="tip-box tip-box-blue"><div class="tip-box-label label-blue">What the Interviewer is Testing<\/div><div class="tip-box-text">' + ans.interviewerTip + '<\/div><\/div>' +
+        '<div style="margin-top:0.8rem;font-size:0.83rem;color:var(--text-dark);font-weight:300"><strong>Common Mistake:<\/strong> ' + ans.commonMistake + '<\/div>' +
+      '<\/div>' +
+    '<\/div>';
+
+    if (!isPremium) {
+      html += '<div style="padding:0 1.5rem 1.5rem">' +
+        '<div class="premium-gate">' +
+          '<div class="premium-gate-text">This answer was generated by <strong>Haiku<\/strong>. Premium users get <strong>3x deeper answers<\/strong> powered by Claude Sonnet.<\/div>' +
+          '<button class="premium-gate-btn" onclick="togglePlan()">Upgrade to Premium<\/button>' +
+        '<\/div>' +
+      '<\/div>';
+    }
+
+    document.getElementById('qloading-' + i).style.display = 'none';
+    var content = document.getElementById('qcontent-' + i);
+    content.innerHTML = html;
+    content.style.display = 'block';
+
+  } catch (err) {
+    document.getElementById('qloading-' + i).innerHTML = 'Could not load. <button onclick="loadAnswerForQuestion(' + i + ')" style="color:var(--gold);background:none;border:none;cursor:pointer;font-weight:600">Retry<\/button>';
+    console.error('Answer load error:', err);
+  }
+}
+
+function switchAnsTab(e, cardIndex, panelId) {
+  var card = document.getElementById('qcard-' + cardIndex);
+  card.querySelectorAll('.ans-tab').forEach(function(t) { t.classList.remove('active'); });
+  card.querySelectorAll('.ans-panel').forEach(function(p) { p.classList.remove('active'); });
+  e.currentTarget.classList.add('active');
+  var panel = document.getElementById(panelId);
+  if (panel) panel.classList.add('active');
+}
+
+function filterQuestions(cat, btn) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var filtered = cat === 'All' ? allQuestions.slice() : allQuestions.filter(function(q) { return q.category === cat; });
+  renderQuestions(filtered);
+}
+
+function practiceThis(i) {
+  var q = displayQuestions[i];
+  if (!q) return;
+  currentPracticeQ = q.question;
+  document.getElementById('practiceQ').textContent = q.question;
+  document.getElementById('practiceAnswer').value = '';
+  document.getElementById('feedbackBox').classList.remove('visible');
+  document.getElementById('practiceCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function getFeedback() {
+  var answer = document.getElementById('practiceAnswer').value.trim();
+  if (!answer) { alert('Please type your answer first.'); return; }
+  if (!currentPracticeQ) { alert('Please click Practice This on a question first.'); return; }
+
+  var feedbackBox = document.getElementById('feedbackBox');
+  feedbackBox.textContent = 'Reviewing your answer...';
+  feedbackBox.classList.add('visible');
+
+  var model = isPremium ? 'claude-sonnet-4-20250514' : 'claude-haiku-4-5';
+  var prompt = 'You are ZUKA interview coach. Give brief honest encouraging feedback on this practice answer in 3 sentences. What they did well, what to improve, one specific tip. No bullet points.\n\nQuestion: ' + currentPracticeQ + '\nAnswer: ' + answer;
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 250,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await response.json();
+    var feedback = data.content.map(function(item) { return item.text || ''; }).join('').trim();
+    feedbackBox.innerHTML = '<strong>Zuka Feedback:<\/strong><br><br>' + feedback;
+  } catch (err) {
+    feedbackBox.textContent = 'Could not get feedback. Check your connection.';
+  }
+}
+
+function clearPractice() {
+  document.getElementById('practiceAnswer').value = '';
+  document.getElementById('feedbackBox').classList.remove('visible');
+}
+
+function resetForm() {
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('formSection').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function printQuestions() {
+  var content = allQuestions.map(function(q, i) {
+    return '<p><strong>' + (i+1) + '. [' + q.category + ']<\/strong><br>' + q.question + '<\/p><hr>';
+  }).join('');
+  var win = window.open('', '_blank');
+  win.document.write('<html><head><title>Interview Questions - ZUKA<\/title><style>body{font-family:Georgia,serif;padding:40px;font-size:12pt;line-height:1.7;max-width:700px;margin:auto}hr{margin:1rem 0}<\/style><\/head><body><h2>Interview Prep - ZUKA<\/h2>' + content + '<\/body><\/html>');
+  win.document.close();
+  win.print();
+}
+</script>
+</body>
+</html>

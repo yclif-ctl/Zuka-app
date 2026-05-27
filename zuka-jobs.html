@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZUKA - Browse Jobs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --green:#0B3D2E;--green-mid:#145C42;--green-light:#1E7A57;--green-pale:#EAF4EF;
+      --gold:#D4A017;--gold-light:#F0C040;--gold-pale:#FDF6E3;
+      --white:#FAFAF5;--off-white:#F3F0E8;--text-dark:#0B1F17;--text-muted:#6B7F75;
+      --border:#E4E1D8;--red:#C0392B;--red-pale:#FDECEA;
+      --blue:#2E4FD4;--blue-pale:#EEF2FF;
+      --sidebar-w:260px
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--text-dark);overflow-x:hidden}
+    .app{display:flex;min-height:100vh}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar-w);background:var(--green);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:50;border-right:1px solid rgba(255,255,255,0.06)}
+    .sidebar-logo{padding:1.8rem 1.6rem 1.4rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .logo-text{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--gold);letter-spacing:3px}
+    .logo-tagline{font-size:0.68rem;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:0.2rem;text-transform:uppercase}
+    .sidebar-user{padding:1.2rem 1.6rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:0.8rem}
+    .user-avatar{width:38px;height:38px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green);font-size:0.85rem}
+    .user-name{font-size:0.88rem;font-weight:600;color:var(--white)}
+    .user-plan{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:0.1rem}
+    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
+    .nav-section-lbl{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:0.8rem 1.6rem 0.4rem;font-weight:600}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1.6rem;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;text-decoration:none}
+    .nav-item:hover{background:rgba(255,255,255,0.06);border-left-color:rgba(212,160,23,0.4)}
+    .nav-item.active{background:rgba(212,160,23,0.12);border-left-color:var(--gold)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .nav-lbl{font-size:0.88rem;color:rgba(255,255,255,0.7);font-weight:400}
+    .nav-item.active .nav-lbl{color:var(--white);font-weight:500}
+    .sidebar-footer{padding:1rem 1.6rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .upgrade-card{background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.25);border-radius:6px;padding:1rem}
+    .upgrade-card p{font-size:0.78rem;color:rgba(255,255,255,0.65);margin-bottom:0.6rem;line-height:1.4}
+    .upgrade-btn{background:var(--gold);color:var(--green);border:none;border-radius:4px;padding:0.45rem 1rem;font-size:0.78rem;font-weight:700;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .upgrade-btn:hover{background:var(--gold-light)}
+
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;position:sticky;top:0;z-index:40;flex-wrap:wrap}
+    .topbar-left h2{font-size:1rem;font-weight:600;color:var(--text-dark)}
+    .topbar-left p{font-size:0.78rem;color:var(--text-muted);margin-top:0.1rem}
+    .topbar-right{display:flex;align-items:center;gap:0.8rem}
+    .search-wrap{display:flex;align-items:center;gap:0.5rem;background:var(--off-white);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.9rem;transition:border-color 0.2s}
+    .search-wrap:focus-within{border-color:var(--gold)}
+    .search-wrap input{border:none;background:transparent;font-size:0.85rem;color:var(--text-dark);font-family:'DM Sans',sans-serif;outline:none;width:200px}
+    .search-wrap input::placeholder{color:var(--text-muted)}
+    .search-icon{font-size:0.9rem;color:var(--text-muted)}
+    .notif-btn{width:36px;height:36px;border-radius:50%;background:var(--off-white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;position:relative}
+    .notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--gold);border:2px solid var(--white)}
+
+    /* CONTENT */
+    .content{padding:2rem;flex:1}
+
+    /* STATS ROW */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.8rem;animation:fadeUp 0.5s ease both}
+    .stat-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:0.9rem;transition:transform 0.2s,box-shadow 0.2s}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(11,61,46,0.07)}
+    .stat-icon{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .ic-green{background:var(--green-pale)}
+    .ic-gold{background:var(--gold-pale)}
+    .ic-blue{background:var(--blue-pale)}
+    .ic-red{background:var(--red-pale)}
+    .stat-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text-dark);line-height:1}
+    .stat-lbl{font-size:0.72rem;color:var(--text-muted);margin-top:0.2rem}
+
+    /* FILTERS */
+    .filters-bar{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;animation:fadeUp 0.5s ease 0.1s both}
+    .filter-group{display:flex;flex-direction:column;gap:0.3rem;flex:1;min-width:140px}
+    .filter-label{font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--text-muted)}
+    .filter-select{padding:0.55rem 0.8rem;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.83rem;color:var(--text-dark);background:var(--off-white);outline:none;cursor:pointer;transition:border-color 0.2s}
+    .filter-select:focus{border-color:var(--gold)}
+    .filter-divider{width:1px;height:40px;background:var(--border);flex-shrink:0}
+    .filter-apply-btn{padding:0.6rem 1.4rem;background:var(--green);color:var(--white);border:none;border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap}
+    .filter-apply-btn:hover{background:var(--green-light)}
+    .filter-reset{padding:0.6rem 0.9rem;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+    .filter-reset:hover{border-color:var(--red);color:var(--red)}
+
+    /* CATEGORY PILLS */
+    .category-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;animation:fadeUp 0.5s ease 0.15s both}
+    .cat-pill{padding:0.45rem 1rem;border-radius:20px;border:1.5px solid var(--border);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text-muted);transition:all 0.2s}
+    .cat-pill:hover{border-color:var(--gold);color:var(--text-dark)}
+    .cat-pill.active{border-color:var(--green);background:var(--green);color:var(--white);font-weight:600}
+
+    /* RESULTS HEADER */
+    .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem}
+    .results-count{font-size:0.85rem;color:var(--text-muted);font-weight:400}
+    .results-count strong{color:var(--text-dark);font-weight:600}
+    .sort-wrap{display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-muted)}
+    .sort-select{padding:0.4rem 0.7rem;border:1px solid var(--border);border-radius:5px;font-family:'DM Sans',sans-serif;font-size:0.8rem;background:var(--white);color:var(--text-dark);outline:none;cursor:pointer}
+
+    /* JOBS GRID */
+    .jobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem;animation:fadeUp 0.5s ease 0.2s both}
+
+    /* JOB CARD */
+    .job-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:1.4rem;transition:all 0.25s;cursor:pointer;position:relative;overflow:hidden}
+    .job-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--green-light));transform:scaleX(0);transform-origin:left;transition:transform 0.3s}
+    .job-card:hover{border-color:rgba(212,160,23,0.4);transform:translateY(-3px);box-shadow:0 10px 30px rgba(11,61,46,0.1)}
+    .job-card:hover::before{transform:scaleX(1)}
+    .job-card.featured{border-color:var(--gold);background:linear-gradient(135deg,var(--white) 0%,var(--gold-pale) 100%)}
+    .featured-ribbon{position:absolute;top:12px;right:-8px;background:var(--gold);color:var(--green);font-size:0.65rem;font-weight:700;padding:0.2rem 0.8rem;letter-spacing:1px;text-transform:uppercase;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,8px 50%)}
+
+    .job-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.9rem;gap:0.5rem}
+    .job-logo{width:42px;height:42px;border-radius:8px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .job-save{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--text-muted);transition:all 0.2s;padding:0.2rem}
+    .job-save:hover{color:var(--gold);transform:scale(1.2)}
+    .job-save.saved{color:var(--gold)}
+
+    .job-title{font-size:0.95rem;font-weight:600;color:var(--text-dark);margin-bottom:0.2rem;line-height:1.3}
+    .job-company{font-size:0.78rem;color:var(--text-muted);margin-bottom:0.7rem}
+    .job-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.9rem}
+    .job-tag{font-size:0.68rem;padding:0.22rem 0.6rem;border-radius:20px;font-weight:500}
+    .tag-green{background:var(--green-pale);color:var(--green-mid)}
+    .tag-gold{background:var(--gold-pale);color:#8B6200}
+    .tag-blue{background:var(--blue-pale);color:var(--blue)}
+    .tag-gray{background:var(--off-white);color:var(--text-muted)}
+
+    .job-footer{display:flex;align-items:center;justify-content:space-between;padding-top:0.9rem;border-top:1px solid var(--border);margin-bottom:0.8rem}
+    .job-salary{font-size:0.85rem;font-weight:600;color:var(--green)}
+    .job-match{font-size:0.72rem;font-weight:700;color:var(--gold);background:var(--gold-pale);padding:0.22rem 0.6rem;border-radius:20px}
+    .job-posted{font-size:0.7rem;color:var(--text-muted)}
+
+    .apply-btn{width:100%;padding:0.65rem;background:var(--green);color:var(--white);border:none;border-radius:6px;font-size:0.83rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.4rem}
+    .apply-btn:hover{background:var(--green-light)}
+    .apply-btn.applied{background:var(--green-pale);color:var(--green-mid);cursor:default}
+
+    /* EMPTY STATE */
+    .empty-state{text-align:center;padding:4rem 2rem;background:var(--white);border-radius:10px;border:1px solid var(--border);display:none}
+    .empty-state.visible{display:block}
+    .empty-icon{font-size:3rem;margin-bottom:1rem}
+    .empty-title{font-size:1.1rem;font-weight:600;color:var(--text-dark);margin-bottom:0.5rem}
+    .empty-sub{font-size:0.85rem;color:var(--text-muted);font-weight:300}
+
+    /* LOAD MORE */
+    .load-more-wrap{text-align:center;margin-top:2rem}
+    .load-more-btn{padding:0.85rem 2.5rem;background:transparent;color:var(--green);border:1.5px solid var(--green);border-radius:7px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+    .load-more-btn:hover{background:var(--green);color:var(--white)}
+
+    /* JOB DETAIL MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(11,31,23,0.6);z-index:100;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease both}
+    .modal{background:var(--white);border-radius:12px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s ease both}
+    .modal-header{background:var(--green);padding:1.8rem 2rem;position:relative}
+    .modal-header::before{content:'';position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(212,160,23,0.15) 0%,transparent 70%)}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.1);border:none;color:var(--white);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    .modal-close:hover{background:rgba(255,255,255,0.2)}
+    .modal-logo{width:52px;height:52px;border-radius:10px;background:rgba(212,160,23,0.15);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem}
+    .modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--white);margin-bottom:0.3rem}
+    .modal-company{font-size:0.88rem;color:rgba(255,255,255,0.6)}
+    .modal-tags{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.9rem}
+    .modal-tag{font-size:0.7rem;padding:0.25rem 0.7rem;border-radius:20px;font-weight:600;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85)}
+    .modal-body{padding:1.8rem 2rem}
+    .modal-section{margin-bottom:1.5rem}
+    .modal-section-title{font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--text-muted);margin-bottom:0.8rem}
+    .modal-desc{font-size:0.88rem;line-height:1.8;color:var(--text-dark);font-weight:300}
+    .modal-list{list-style:none;display:flex;flex-direction:column;gap:0.4rem}
+    .modal-list li{font-size:0.85rem;color:var(--text-dark);display:flex;align-items:flex-start;gap:0.5rem;font-weight:300;line-height:1.5}
+    .modal-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem}
+    .modal-info-item{background:var(--off-white);border-radius:7px;padding:0.8rem 1rem}
+    .modal-info-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;color:var(--text-muted);margin-bottom:0.2rem}
+    .modal-info-val{font-size:0.88rem;font-weight:500;color:var(--text-dark)}
+    .modal-footer{padding:1.2rem 2rem;border-top:1px solid var(--border);display:flex;gap:0.8rem}
+    .modal-apply-btn{flex:1;padding:0.85rem;background:var(--green);color:var(--white);border:none;border-radius:7px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .modal-apply-btn:hover{background:var(--green-light)}
+    .modal-ai-btn{flex:1;padding:0.85rem;background:var(--gold);color:var(--green);border:none;border-radius:7px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .modal-ai-btn:hover{background:var(--gold-light)}
+
+    /* LOADING SPINNER FOR API */
+    .api-loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:0.85rem}
+    .api-spinner{width:32px;height:32px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--gold);animation:spin 0.8s linear infinite;margin:0 auto 0.8rem}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.stats-row{grid-template-columns:1fr 1fr}.filters-bar{flex-direction:column}.modal-info-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">ZUKA</div>
+      <div class="logo-tagline">AI Career Launchpad</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">AM</div>
+      <div>
+        <div class="user-name">Amara Mensah</div>
+        <div class="user-plan">Free Plan</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-lbl">Main</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">&#127968;</span><span class="nav-lbl">Dashboard</span></a>
+      <a class="nav-item active" href="zuka-jobs.html"><span class="nav-icon">&#127760;</span><span class="nav-lbl">Browse Jobs</span></a>
+      <div class="nav-section-lbl">AI Tools</div>
+      <a class="nav-item" href="zuka-cv-reviewer.html"><span class="nav-icon">&#128196;</span><span class="nav-lbl">CV Reviewer</span></a>
+      <a class="nav-item" href="zuka-cover-letter.html"><span class="nav-icon">&#9997;</span><span class="nav-lbl">Cover Letter</span></a>
+      <a class="nav-item" href="zuka-skill-gap.html"><span class="nav-icon">&#127919;</span><span class="nav-lbl">Skill Gap</span></a>
+      <a class="nav-item" href="zuka-interview-prep.html"><span class="nav-icon">&#127908;</span><span class="nav-lbl">Interview Prep</span></a>
+      <div class="nav-section-lbl">Account</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">&#128100;</span><span class="nav-lbl">My Profile</span></a>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">&#9881;</span><span class="nav-lbl">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="upgrade-card">
+        <p>Premium unlocks job alerts and priority listings</p>
+        <button class="upgrade-btn">Upgrade - $4/mo</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Browse Jobs</h2>
+        <p>Live remote jobs updated daily from verified sources</p>
+      </div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="searchInput" placeholder="Search jobs, skills, companies..." oninput="filterJobs()"/>
+        </div>
+        <div class="notif-btn">&#128276;<div class="notif-dot"></div></div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- STATS -->
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-icon ic-green">&#127760;</div><div><div class="stat-val" id="totalCount">...</div><div class="stat-lbl">Jobs Available</div></div></div>
+        <div class="stat-card"><div class="stat-icon ic-gold">&#128640;</div><div><div class="stat-val" id="newCount">...</div><div class="stat-lbl">Added Today</div></div></div>
+        <div class="stat-card"><div class="stat-icon ic-blue">&#128187;</div><div><div class="stat-val" id="techCount">...</div><div class="stat-lbl">Tech Roles</div></div></div>
+        <div class="stat-card"><div class="stat-icon ic-red">&#127891;</div><div><div class="stat-val" id="entryCount">...</div><div class="stat-lbl">Entry Level</div></div></div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters-bar">
+        <div class="filter-group">
+          <div class="filter-label">Category</div>
+          <select class="filter-select" id="filterCategory" onchange="filterJobs()">
+            <option value="">All Categories</option>
+            <option value="Technology">Technology</option>
+            <option value="Business">Business</option>
+            <option value="Design">Design</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Finance">Finance</option>
+            <option value="Writing">Writing</option>
+            <option value="Customer Service">Customer Service</option>
+          </select>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group">
+          <div class="filter-label">Experience</div>
+          <select class="filter-select" id="filterExp" onchange="filterJobs()">
+            <option value="">Any Level</option>
+            <option value="Entry Level">Entry Level</option>
+            <option value="Junior">Junior</option>
+            <option value="Mid Level">Mid Level</option>
+          </select>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group">
+          <div class="filter-label">Salary Range</div>
+          <select class="filter-select" id="filterSalary" onchange="filterJobs()">
+            <option value="">Any Salary</option>
+            <option value="500">$500+ /mo</option>
+            <option value="800">$800+ /mo</option>
+            <option value="1000">$1000+ /mo</option>
+            <option value="1500">$1500+ /mo</option>
+          </select>
+        </div>
+        <div class="filter-divider"></div>
+        <button class="filter-reset" onclick="resetFilters()">Reset</button>
+      </div>
+
+      <!-- CATEGORY PILLS -->
+      <div class="category-row" id="catRow">
+        <button class="cat-pill active" onclick="setCat('',this)">All Jobs</button>
+        <button class="cat-pill" onclick="setCat('Technology',this)">&#128187; Tech</button>
+        <button class="cat-pill" onclick="setCat('Business',this)">&#128188; Business</button>
+        <button class="cat-pill" onclick="setCat('Design',this)">&#127775; Design</button>
+        <button class="cat-pill" onclick="setCat('Marketing',this)">&#128226; Marketing</button>
+        <button class="cat-pill" onclick="setCat('Finance',this)">&#128176; Finance</button>
+        <button class="cat-pill" onclick="setCat('Writing',this)">&#9997; Writing</button>
+        <button class="cat-pill" onclick="setCat('Customer Service',this)">&#128222; Support</button>
+      </div>
+
+      <!-- RESULTS HEADER -->
+      <div class="results-header">
+        <div class="results-count"><strong id="shownCount">0</strong> jobs found</div>
+        <div class="sort-wrap">
+          Sort by:
+          <select class="sort-select" id="sortSelect" onchange="filterJobs()">
+            <option value="match">Best Match</option>
+            <option value="newest">Newest</option>
+            <option value="salary">Highest Salary</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- API LOADING -->
+      <div class="api-loading" id="apiLoading">
+        <div class="api-spinner"></div>
+        Loading live jobs from Remotive...
+      </div>
+
+      <!-- JOBS GRID -->
+      <div class="jobs-grid" id="jobsGrid"></div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">&#128269;</div>
+        <div class="empty-title">No jobs found</div>
+        <div class="empty-sub">Try adjusting your filters or search term</div>
+      </div>
+
+      <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+        <button class="load-more-btn" onclick="loadMore()">Load More Jobs</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- JOB DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <div class="modal-logo" id="modalLogo">&#128188;</div>
+      <div class="modal-title" id="modalTitle">Job Title</div>
+      <div class="modal-company" id="modalCompany">Company</div>
+      <div class="modal-tags" id="modalTags"></div>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <div class="api-loading"><div class="api-spinner"></div>Loading job details...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-ai-btn" onclick="goToCoverLetter()">&#9997; Write Cover Letter</button>
+      <button class="modal-apply-btn" id="modalApplyBtn" onclick="window.location.href='zuka-cover-letter.html'">Apply Now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var allJobs = [];
+var filteredJobs = [];
+var shownCount = 0;
+var pageSize = 9;
+var savedJobs = new Set();
+var appliedJobs = new Set();
+var currentModalJob = null;
+var activeCatFilter = '';
+
+// SAMPLE JOBS - shown immediately while API loads
+var sampleJobs = [
+  {id:'s1',title:'Junior Data Analyst',company_name:'DataBridge Africa',category:'Technology',job_type:'Full Time',salary:'$800 - $1,200/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','Excel','SQL'],description:'Analyse business data and produce reports to help teams make better decisions. No prior experience required - we train you.',requirements:['Basic Excel or Google Sheets','Interest in data and numbers','Good communication skills','Attention to detail'],match:92,posted:'2 hours ago',featured:true,logo:'&#128202;'},
+  {id:'s2',title:'Frontend Developer Intern',company_name:'TechNova Global',category:'Technology',job_type:'Internship',salary:'$600 - $900/mo',candidate_required_location:'Remote',tags:['Remote','Internship','HTML','CSS','React'],description:'Build beautiful web interfaces for our growing SaaS platform. Great opportunity for a fresh graduate to gain real experience.',requirements:['Basic HTML and CSS','Willingness to learn React','Good eye for design','Able to work independently'],match:87,posted:'5 hours ago',featured:true,logo:'&#128187;'},
+  {id:'s3',title:'Content and Social Media Writer',company_name:'CreativeHub',category:'Writing',job_type:'Full Time',salary:'$500 - $800/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','Writing','SEO'],description:'Create engaging blog posts, social media content and email newsletters for our clients across Africa and beyond.',requirements:['Excellent written English','Basic SEO knowledge','Creative thinking','Meets deadlines consistently'],match:84,posted:'1 day ago',featured:false,logo:'&#128221;'},
+  {id:'s4',title:'Virtual Assistant',company_name:'RemoteWork Hub',category:'Business',job_type:'Part Time',salary:'$400 - $700/mo',candidate_required_location:'Remote',tags:['Remote','Part Time','Admin','Communication'],description:'Support a busy founder with scheduling, email management, research and admin tasks.',requirements:['Excellent organisation','Good written English','Reliable internet connection','Experience with Google Workspace'],match:79,posted:'1 day ago',featured:false,logo:'&#128100;'},
+  {id:'s5',title:'Junior Graphic Designer',company_name:'PixelCraft Studio',category:'Design',job_type:'Full Time',salary:'$700 - $1,000/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','Canva','Figma'],description:'Design social media graphics, presentations and marketing materials for clients in the tech industry.',requirements:['Proficiency in Canva or Figma','Portfolio of design work','Understanding of brand guidelines','Attention to detail'],match:81,posted:'2 days ago',featured:false,logo:'&#127912;'},
+  {id:'s6',title:'Customer Success Representative',company_name:'SaaSGrow',category:'Customer Service',job_type:'Full Time',salary:'$600 - $900/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','Communication','CRM'],description:'Help customers get value from our software product. Answer questions, solve problems and build lasting relationships.',requirements:['Excellent communication skills','Patient and empathetic','Quick learner','Good internet connection'],match:76,posted:'2 days ago',featured:false,logo:'&#128222;'},
+  {id:'s7',title:'Digital Marketing Assistant',company_name:'GrowthLab',category:'Marketing',job_type:'Full Time',salary:'$550 - $850/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','Marketing','Analytics'],description:'Assist with running digital marketing campaigns across social media, email and paid ads.',requirements:['Understanding of social media platforms','Basic analytics knowledge','Creative thinking','Good written communication'],match:73,posted:'3 days ago',featured:false,logo:'&#128226;'},
+  {id:'s8',title:'Junior Accountant',company_name:'FinTrack Africa',category:'Finance',job_type:'Full Time',salary:'$700 - $1,100/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','Accounting','Excel'],description:'Handle bookkeeping, invoicing and basic financial reporting for small to medium businesses.',requirements:['Degree or diploma in accounting or finance','Basic Excel skills','Attention to detail','Understanding of basic accounting principles'],match:88,posted:'3 days ago',featured:false,logo:'&#128176;'},
+  {id:'s9',title:'SEO Content Specialist',company_name:'RankUp Digital',category:'Marketing',job_type:'Full Time',salary:'$600 - $950/mo',candidate_required_location:'Remote',tags:['Remote','Entry Level','SEO','Content Writing'],description:'Write SEO-optimised articles and web copy that ranks on Google and drives organic traffic.',requirements:['Strong written English','Basic understanding of SEO','Research skills','Ability to meet word count targets'],match:71,posted:'4 days ago',featured:false,logo:'&#128270;'}
+];
+
+window.onload = function() {
+  allJobs = sampleJobs.slice();
+  updateStats(allJobs);
+  filterJobs();
+  document.getElementById('apiLoading').style.display = 'none';
+  loadFromRemotive();
+};
+
+function updateStats(jobs) {
+  document.getElementById('totalCount').textContent = jobs.length + '+';
+  document.getElementById('newCount').textContent = jobs.filter(function(j){ return j.posted && j.posted.indexOf('hour') !== -1; }).length;
+  document.getElementById('techCount').textContent = jobs.filter(function(j){ return j.category === 'Technology'; }).length;
+  document.getElementById('entryCount').textContent = jobs.filter(function(j){ return JSON.stringify(j.tags).indexOf('Entry') !== -1; }).length;
+}
+
+async function loadFromRemotive() {
+  try {
+    var response = await fetch('https://remotive.com/api/remote-jobs?limit=20&category=software-dev');
+    if (!response.ok) return;
+    var data = await response.json();
+    if (!data.jobs || data.jobs.length === 0) return;
+
+    var newJobs = data.jobs.map(function(j) {
+      return {
+        id: 'r' + j.id,
+        title: j.title,
+        company_name: j.company_name,
+        category: j.category || 'Technology',
+        job_type: j.job_type || 'Full Time',
+        salary: j.salary || 'Competitive',
+        candidate_required_location: j.candidate_required_location || 'Remote',
+        tags: ['Remote', j.job_type || 'Full Time', j.category || 'Tech'],
+        description: j.description ? j.description.replace(/<[^>]*>/g, '').substring(0, 300) + '...' : 'See full description on company website.',
+        requirements: ['See job description for full requirements'],
+        match: Math.floor(Math.random() * 20) + 70,
+        posted: 'Recently',
+        featured: false,
+        logo: '&#127760;',
+        url: j.url
+      };
+    });
+
+    allJobs = sampleJobs.concat(newJobs);
+    updateStats(allJobs);
+    filterJobs();
+  } catch (err) {
+    // API unavailable - sample jobs already showing
+    console.log('Remotive API unavailable, using sample data');
+  }
+}
+
+function filterJobs() {
+  var search = document.getElementById('searchInput').value.toLowerCase();
+  var category = document.getElementById('filterCategory').value;
+  var exp = document.getElementById('filterExp').value;
+  var salary = parseInt(document.getElementById('filterSalary').value) || 0;
+  var sort = document.getElementById('sortSelect').value;
+  var catFilter = activeCatFilter;
+
+  filteredJobs = allJobs.filter(function(j) {
+    var searchMatch = !search || 
+      j.title.toLowerCase().indexOf(search) !== -1 || 
+      j.company_name.toLowerCase().indexOf(search) !== -1 ||
+      JSON.stringify(j.tags).toLowerCase().indexOf(search) !== -1;
+    var catMatch = !catFilter || j.category === catFilter;
+    var dropCatMatch = !category || j.category === category;
+    var expMatch = !exp || JSON.stringify(j.tags).indexOf(exp) !== -1;
+    var salaryMatch = !salary || extractSalary(j.salary) >= salary;
+    return searchMatch && catMatch && dropCatMatch && expMatch && salaryMatch;
+  });
+
+  if (sort === 'match') {
+    filteredJobs.sort(function(a,b){ return (b.match||0) - (a.match||0); });
+  } else if (sort === 'newest') {
+    filteredJobs.sort(function(a,b){ return a.posted < b.posted ? -1 : 1; });
+  } else if (sort === 'salary') {
+    filteredJobs.sort(function(a,b){ return extractSalary(b.salary) - extractSalary(a.salary); });
+  }
+
+  shownCount = 0;
+  document.getElementById('jobsGrid').innerHTML = '';
+  document.getElementById('shownCount').textContent = filteredJobs.length;
+  renderBatch();
+}
+
+function extractSalary(salaryStr) {
+  if (!salaryStr) return 0;
+  var match = salaryStr.match(/\d+/);
+  return match ? parseInt(match[0]) : 0;
+}
+
+function renderBatch() {
+  var batch = filteredJobs.slice(shownCount, shownCount + pageSize);
+  var grid = document.getElementById('jobsGrid');
+
+  if (filteredJobs.length === 0) {
+    document.getElementById('emptyState').classList.add('visible');
+    document.getElementById('loadMoreWrap').style.display = 'none';
+    return;
+  }
+  document.getElementById('emptyState').classList.remove('visible');
+
+  batch.forEach(function(job, i) {
+    var card = document.createElement('div');
+    card.className = 'job-card' + (job.featured ? ' featured' : '');
+    card.onclick = function() { openModal(job); };
+
+    var tagsHtml = (job.tags || []).map(function(t) {
+      var cls = t === 'Remote' ? 'tag-green' : t === 'Entry Level' || t === 'Internship' ? 'tag-gold' : 'tag-gray';
+      return '<span class="job-tag ' + cls + '">' + t + '<\/span>';
+    }).join('');
+
+    var isSaved = savedJobs.has(job.id);
+    var isApplied = appliedJobs.has(job.id);
+
+    card.innerHTML = (job.featured ? '<div class="featured-ribbon">Featured<\/div>' : '') +
+      '<div class="job-top">' +
+        '<div class="job-logo">' + (job.logo || '&#128188;') + '<\/div>' +
+        '<button class="job-save' + (isSaved ? ' saved' : '') + '" onclick="toggleSave(event,\'' + job.id + '\')">' + (isSaved ? '&#10084;' : '&#129294;') + '<\/button>' +
+      '<\/div>' +
+      '<div class="job-title">' + job.title + '<\/div>' +
+      '<div class="job-company">' + job.company_name + ' &middot; ' + (job.candidate_required_location || 'Remote') + '<\/div>' +
+      '<div class="job-tags">' + tagsHtml + '<\/div>' +
+      '<div class="job-footer">' +
+        '<span class="job-salary">' + (job.salary || 'Competitive') + '<\/span>' +
+        (job.match ? '<span class="job-match">' + job.match + '% Match<\/span>' : '') +
+      '<\/div>' +
+      '<div class="job-posted">' + (job.posted || 'Recently') + '<\/div>' +
+      '<button class="apply-btn' + (isApplied ? ' applied' : '') + '" onclick="quickApply(event,\'' + job.id + '\')">' +
+        (isApplied ? '&#10003; Applied' : 'Apply with Zuka AI') +
+      '<\/button>';
+
+    grid.appendChild(card);
+  });
+
+  shownCount += batch.length;
+  document.getElementById('loadMoreWrap').style.display = shownCount < filteredJobs.length ? 'block' : 'none';
+}
+
+function loadMore() {
+  renderBatch();
+}
+
+function setCat(cat, btn) {
+  activeCatFilter = cat;
+  document.querySelectorAll('.cat-pill').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('filterCategory').value = cat;
+  filterJobs();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterCategory').value = '';
+  document.getElementById('filterExp').value = '';
+  document.getElementById('filterSalary').value = '';
+  document.getElementById('sortSelect').value = 'match';
+  activeCatFilter = '';
+  document.querySelectorAll('.cat-pill').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelector('.cat-pill').classList.add('active');
+  filterJobs();
+}
+
+function toggleSave(e, id) {
+  e.stopPropagation();
+  if (savedJobs.has(id)) { savedJobs.delete(id); } else { savedJobs.add(id); }
+  filterJobs();
+}
+
+function quickApply(e, id) {
+  e.stopPropagation();
+  appliedJobs.add(id);
+  filterJobs();
+}
+
+function openModal(job) {
+  currentModalJob = job;
+  document.getElementById('modalLogo').textContent = job.logo || '&#128188;';
+  document.getElementById('modalTitle').textContent = job.title;
+  document.getElementById('modalCompany').textContent = job.company_name + ' - ' + (job.candidate_required_location || 'Remote');
+
+  var tagsHtml = (job.tags || []).map(function(t){
+    return '<span class="modal-tag">' + t + '<\/span>';
+  }).join('');
+  document.getElementById('modalTags').innerHTML = tagsHtml;
+
+  var reqHtml = (job.requirements || []).map(function(r){
+    return '<li><span>&#10003;<\/span>' + r + '<\/li>';
+  }).join('');
+
+  document.getElementById('modalBody').innerHTML =
+    '<div class="modal-section">' +
+      '<div class="modal-section-title">About This Role<\/div>' +
+      '<div class="modal-desc">' + (job.description || 'See full details on company website.') + '<\/div>' +
+    '<\/div>' +
+    '<div class="modal-section">' +
+      '<div class="modal-section-title">Requirements<\/div>' +
+      '<ul class="modal-list">' + reqHtml + '<\/ul>' +
+    '<\/div>' +
+    '<div class="modal-section">' +
+      '<div class="modal-section-title">Job Details<\/div>' +
+      '<div class="modal-info-grid">' +
+        '<div class="modal-info-item"><div class="modal-info-label">Salary<\/div><div class="modal-info-val">' + (job.salary || 'Competitive') + '<\/div><\/div>' +
+        '<div class="modal-info-item"><div class="modal-info-label">Type<\/div><div class="modal-info-val">' + (job.job_type || 'Full Time') + '<\/div><\/div>' +
+        '<div class="modal-info-item"><div class="modal-info-label">Category<\/div><div class="modal-info-val">' + (job.category || 'General') + '<\/div><\/div>' +
+        '<div class="modal-info-item"><div class="modal-info-label">Posted<\/div><div class="modal-info-val">' + (job.posted || 'Recently') + '<\/div><\/div>' +
+      '<\/div>' +
+    '<\/div>';
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function applyToJob() {
+  if (currentModalJob) {
+    if (currentModalJob.url) {
+      window.open(currentModalJob.url, '_blank');
+    } else {
+      appliedJobs.add(currentModalJob.id);
+      closeModal();
+      filterJobs();
+      alert('Application marked. Use the Cover Letter Generator to prepare your application!');
+    }
+  }
+}
+
+function goToCoverLetter() {
+  closeModal();
+  window.location.href='zuka-cover-letter.html';
+}
+</script>
+</body>
+</html>

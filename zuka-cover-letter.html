@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZUKA — Cover Letter Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145C42;
+      --green-light: #1E7A57;
+      --green-pale:  #EAF4EF;
+      --gold:        #D4A017;
+      --gold-light:  #F0C040;
+      --gold-pale:   #FDF6E3;
+      --white:       #FAFAF5;
+      --off-white:   #F3F0E8;
+      --text-dark:   #0B1F17;
+      --text-muted:  #6B7F75;
+      --border:      #E4E1D8;
+      --sidebar-w:   260px;
+    }
+    html, body {
+      height: 100%; font-family: 'DM Sans', sans-serif;
+      background: var(--off-white); color: var(--text-dark);
+      overflow-x: hidden;
+    }
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--green);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; height: 100vh;
+      z-index: 50; border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .sidebar-logo { padding: 1.8rem 1.6rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--gold); letter-spacing: 3px; }
+    .logo-tagline { font-size: 0.68rem; color: rgba(255,255,255,0.35); letter-spacing: 1px; margin-top: 0.2rem; text-transform: uppercase; }
+    .sidebar-user { padding: 1.2rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.8rem; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green); font-size: 0.85rem; }
+    .user-name { font-size: 0.88rem; font-weight: 600; color: var(--white); }
+    .user-plan { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+    .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+    .nav-section-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 0.8rem 1.6rem 0.4rem; font-weight: 600; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1.6rem; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; text-decoration: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); border-left-color: rgba(212,160,23,0.4); }
+    .nav-item.active { background: rgba(212,160,23,0.12); border-left-color: var(--gold); }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-label { font-size: 0.88rem; color: rgba(255,255,255,0.7); font-weight: 400; }
+    .nav-item.active .nav-label { color: var(--white); font-weight: 500; }
+    .sidebar-footer { padding: 1rem 1.6rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .upgrade-card { background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25); border-radius: 6px; padding: 1rem; }
+    .upgrade-card p { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-bottom: 0.6rem; line-height: 1.4; }
+    .upgrade-btn { background: var(--gold); color: var(--green); border: none; border-radius: 4px; padding: 0.45rem 1rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; width: 100%; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
+    .upgrade-btn:hover { background: var(--gold-light); }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+    .topbar-left h2 { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
+    .topbar-left p { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
+    .free-badge { background: var(--gold-pale); border: 1px solid rgba(212,160,23,0.3); color: #8B6200; font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 20px; }
+
+    /* ── CONTENT ── */
+    .content { padding: 2rem; flex: 1; max-width: 960px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: var(--green); border-radius: 10px;
+      padding: 1.8rem 2rem; margin-bottom: 1.8rem;
+      display: flex; align-items: center; gap: 1.2rem;
+      animation: fadeUp 0.5s ease both;
+      position: relative; overflow: hidden;
+    }
+    .page-header::before {
+      content: ''; position: absolute; top: -40px; right: -40px;
+      width: 180px; height: 180px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,160,23,0.12) 0%, transparent 70%);
+    }
+    .header-icon { width: 56px; height: 56px; border-radius: 10px; background: rgba(212,160,23,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+    .header-text h1 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--white); }
+    .header-text p { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 0.3rem; font-weight: 300; }
+    .header-limit { margin-left: auto; text-align: right; flex-shrink: 0; }
+    .limit-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .limit-lbl { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+
+    /* ── TWO COLUMN LAYOUT ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+    /* ── CARDS ── */
+    .card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); animation: fadeUp 0.5s ease both; }
+    .card-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 0.92rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 0.4rem; }
+    .card-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .card-body { padding: 1.2rem 1.5rem; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { font-size: 0.78rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.4rem; display: block; letter-spacing: 0.3px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 0.7rem 0.9rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+      color: var(--text-dark); background: var(--off-white);
+      outline: none; transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); background: var(--white); }
+    .form-textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); font-weight: 300; }
+    .form-select { cursor: pointer; }
+
+    /* ── TONE SELECTOR ── */
+    .tone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .tone-btn {
+      padding: 0.6rem 0.4rem; border-radius: 6px; border: 1.5px solid var(--border);
+      font-size: 0.78rem; font-weight: 500; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; background: var(--off-white);
+      color: var(--text-muted); transition: all 0.2s; text-align: center;
+    }
+    .tone-btn:hover { border-color: var(--gold); color: var(--text-dark); }
+    .tone-btn.selected { border-color: var(--green); background: var(--green-pale); color: var(--green); font-weight: 600; }
+
+    /* ── GENERATE BTN ── */
+    .generate-btn {
+      width: 100%; padding: 1rem;
+      background: var(--green); color: var(--white);
+      border: none; border-radius: 7px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.3s; margin-top: 0.5rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .generate-btn:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(11,61,46,0.2); }
+    .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── LOADING ── */
+    .loading-state { display: none; text-align: center; padding: 3rem 2rem; background: var(--white); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .loading-state.visible { display: block; }
+    .spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--gold); animation: spin 0.8s linear infinite; margin: 0 auto 1.2rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 1rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.4rem; }
+    .loading-sub { font-size: 0.85rem; color: var(--text-muted); font-weight: 300; }
+
+    /* ── RESULT ── */
+    .result-section { display: none; animation: fadeUp 0.6s ease both; }
+    .result-section.visible { display: block; }
+
+    .result-card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 1.2rem; }
+    .result-header { background: var(--green); padding: 1.2rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; }
+    .result-header-left h3 { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--white); }
+    .result-header-left p { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.2rem; }
+    .result-actions { display: flex; gap: 0.5rem; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: background 0.2s; }
+    .icon-btn:hover { background: rgba(255,255,255,0.18); }
+
+    .letter-body { padding: 2rem; }
+    .letter-text {
+      font-size: 0.92rem; line-height: 1.9; color: var(--text-dark);
+      font-weight: 300; white-space: pre-wrap;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── QUALITY BADGES ── */
+    .quality-row { display: flex; gap: 0.6rem; flex-wrap: wrap; padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--off-white); }
+    .quality-badge { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 20px; }
+    .badge-green { background: var(--green-pale); color: var(--green-mid); }
+    .badge-gold  { background: var(--gold-pale); color: #8B6200; }
+
+    /* ── ACTION ROW ── */
+    .action-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .action-btn { flex: 1; padding: 0.85rem 1rem; border-radius: 7px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.25s; border: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+    .btn-green { background: var(--green); color: var(--white); }
+    .btn-green:hover { background: var(--green-light); }
+    .btn-outline { background: transparent; color: var(--green); border: 1.5px solid var(--green); }
+    .btn-outline:hover { background: var(--green-pale); }
+    .btn-gold { background: var(--gold); color: var(--green); }
+    .btn-gold:hover { background: var(--gold-light); }
+
+    /* ── TIP CARD ── */
+    .tip-card { background: var(--green); border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.9rem; animation: fadeUp 0.6s ease 0.2s both; }
+    .tip-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .tip-label { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 0.3rem; }
+    .tip-text { font-size: 0.83rem; color: rgba(255,255,255,0.72); line-height: 1.6; font-weight: 300; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; } .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">ZUKA</div>
+      <div class="logo-tagline">AI Career Launchpad</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">AM</div>
+      <div>
+        <div class="user-name">Amara Mensah</div>
+        <div class="user-plan">Free Plan · 2 letters left</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="zuka-jobs.html"><span class="nav-icon">🌐</span><span class="nav-label">Browse Jobs</span></a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="zuka-cv-reviewer.html"><span class="nav-icon">📄</span><span class="nav-label">CV Reviewer</span></a>
+      <a class="nav-item active" href="zuka-cover-letter.html"><span class="nav-icon">✍️</span><span class="nav-label">Cover Letter</span></a>
+      <a class="nav-item" href="zuka-skill-gap.html"><span class="nav-icon">🎯</span><span class="nav-label">Skill Gap</span></a>
+      <a class="nav-item" href="zuka-interview-prep.html"><span class="nav-icon">🎤</span><span class="nav-label">Interview Prep</span></a>
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">👤</span><span class="nav-label">My Profile</span></a>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="upgrade-card">
+        <p>Unlock unlimited cover letters with Premium</p>
+        <button class="upgrade-btn">Upgrade — $4/mo</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Cover Letter Generator</h2>
+        <p>AI writes a tailored professional cover letter for any job in seconds</p>
+      </div>
+      <div class="free-badge">🎁 3 Free Letters/Month</div>
+    </header>
+
+    <main class="content">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="header-icon">✍️</div>
+        <div class="header-text">
+          <h1>Cover Letter Generator</h1>
+          <p>Fill in the details below. Zuka AI writes a perfectly tailored cover letter — you just copy and send.</p>
+        </div>
+        <div class="header-limit">
+          <div class="limit-val">2</div>
+          <div class="limit-lbl">Letters remaining</div>
+        </div>
+      </div>
+
+      <!-- TIP -->
+      <div class="tip-card">
+        <div class="tip-icon">💡</div>
+        <div>
+          <div class="tip-label">Zuka Pro Tip</div>
+          <div class="tip-text">A tailored cover letter increases your callback rate significantly. Always paste the actual job description so AI can match your letter to exactly what the employer wants.</div>
+        </div>
+      </div>
+
+      <!-- FORM — TWO COLUMNS -->
+      <div class="two-col" id="formSection">
+
+        <!-- LEFT — YOUR DETAILS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👤 Your Details</div>
+            <div class="card-sub">Tell us about yourself</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input class="form-input" id="fullName" type="text" placeholder="e.g. Amara Mensah"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Qualification Type *</label>
+              <select class="form-select" id="qualType">
+                <option value="">— Select your qualification —</option>
+                <option value="Bachelor's Degree">Bachelor's Degree</option>
+                <option value="Diploma">Diploma</option>
+                <option value="Higher National Diploma (HND)">Higher National Diploma (HND)</option>
+                <option value="Certificate">Certificate</option>
+                <option value="Associate Degree">Associate Degree</option>
+                <option value="Vocational Training">Vocational Training</option>
+                <option value="Self Taught / Bootcamp">Self Taught / Bootcamp</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Field of Study *</label>
+              <input class="form-input" id="degree" type="text" placeholder="e.g. Computer Science, Business Admin, Graphic Design"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">University / College *</label>
+              <input class="form-input" id="university" type="text" placeholder="e.g. University of Nairobi"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Top Skills (comma separated) *</label>
+              <input class="form-input" id="skills" type="text" placeholder="e.g. Python, Data Analysis, Communication"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Any Experience? (internship, projects, volunteer)</label>
+              <textarea class="form-textarea" id="experience" placeholder="e.g. Built a student record management system as a final year project. Volunteered as social media manager for campus club..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT — JOB DETAILS + TONE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💼 Job Details</div>
+            <div class="card-sub">Tell us about the job you're applying for</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Job Title *</label>
+              <input class="form-input" id="jobTitle" type="text" placeholder="e.g. Junior Data Analyst"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Name *</label>
+              <input class="form-input" id="companyName" type="text" placeholder="e.g. DataBridge Africa"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job Description (paste key parts) *</label>
+              <textarea class="form-textarea" id="jobDesc" style="min-height:120px" placeholder="Paste the job description or key requirements here. The more detail you give, the better AI tailors your letter..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Letter Tone</label>
+              <div class="tone-grid">
+                <button class="tone-btn selected" onclick="selectTone(this, 'Professional')">💼 Professional</button>
+                <button class="tone-btn" onclick="selectTone(this, 'Confident')">🔥 Confident</button>
+                <button class="tone-btn" onclick="selectTone(this, 'Friendly')">😊 Friendly</button>
+                <button class="tone-btn" onclick="selectTone(this, 'Formal')">🎩 Formal</button>
+                <button class="tone-btn" onclick="selectTone(this, 'Passionate')">💪 Passionate</button>
+                <button class="tone-btn" onclick="selectTone(this, 'Humble')">🙏 Humble</button>
+              </div>
+            </div>
+            <button class="generate-btn" id="generateBtn" onclick="generateLetter()">
+              ✍️ Generate My Cover Letter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-title">Zuka AI is writing your cover letter...</div>
+        <div class="loading-sub">Tailoring every sentence to the job. This takes about 10 seconds.</div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-section" id="resultSection">
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-header-left">
+              <h3>✅ Your Cover Letter is Ready</h3>
+              <p id="letterMeta">—</p>
+            </div>
+            <div class="result-actions">
+              <button class="icon-btn" onclick="copyLetter()" title="Copy to clipboard">📋</button>
+              <button class="icon-btn" onclick="printLetter()" title="Print / Save as PDF">🖨️</button>
+            </div>
+          </div>
+          <div class="letter-body">
+            <div class="letter-text" id="letterText"></div>
+          </div>
+          <div class="quality-row">
+            <div class="quality-badge badge-green">✅ Tailored to Job</div>
+            <div class="quality-badge badge-green">✅ Professional Tone</div>
+            <div class="quality-badge badge-gold">⭐ AI Optimised</div>
+            <div class="quality-badge badge-green">✅ Ready to Send</div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="action-btn btn-gold" onclick="copyLetter()">📋 Copy Letter</button>
+          <button class="action-btn btn-green" onclick="regenerate()">🔄 Regenerate</button>
+          <button class="action-btn btn-outline" onclick="resetForm()">✏️ Edit Details</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  let selectedTone = 'Professional';
+  let currentLetter = '';
+
+  function selectTone(btn, tone) {
+    document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedTone = tone;
+  }
+
+  function getVal(id) { return document.getElementById(id).value.trim(); }
+
+  async function generateLetter() {
+    const fullName    = getVal('fullName');
+    const qualType    = document.getElementById('qualType').value;
+    const degree      = getVal('degree');
+    const university  = getVal('university');
+    const skills      = getVal('skills');
+    const experience  = getVal('experience');
+    const jobTitle    = getVal('jobTitle');
+    const companyName = getVal('companyName');
+    const jobDesc     = getVal('jobDesc');
+
+    if (!fullName || !qualType || !degree || !jobTitle || !companyName || !jobDesc) {
+      alert('Please fill in all required fields marked with *');
+      return;
+    }
+
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('loadingState').classList.add('visible');
+    document.getElementById('resultSection').classList.remove('visible');
+
+    const prompt = `You are ZUKA's expert cover letter writer for fresh African graduates applying for remote jobs.
+
+Write a professional, tailored cover letter for this graduate. Tone: ${selectedTone}.
+
+APPLICANT DETAILS:
+- Name: ${fullName}
+- Qualification: ${qualType} in ${degree} from ${university}
+- Skills: ${skills}
+- Experience/Projects: ${experience || 'No formal work experience yet — fresh graduate'}
+
+JOB DETAILS:
+- Position: ${jobTitle} at ${companyName}
+- Job Description: ${jobDesc}
+
+INSTRUCTIONS:
+- Write a complete, ready-to-send cover letter
+- Start with the date and proper salutation
+- 3-4 strong paragraphs: opening, skills match, why this company, closing call to action
+- Reference specific details from the job description
+- Make the graduate sound confident and capable despite limited experience
+- End with a professional sign-off
+- Do NOT add placeholders like [Your Address] — write naturally
+- Write only the letter — no explanations before or after`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      currentLetter = data.content.map(i => i.text || '').join('').trim();
+
+      document.getElementById('loadingState').classList.remove('visible');
+      document.getElementById('letterText').textContent = currentLetter;
+      document.getElementById('letterMeta').textContent = `${jobTitle} at ${companyName} · ${selectedTone} tone`;
+      document.getElementById('resultSection').classList.add('visible');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      document.getElementById('loadingState').classList.remove('visible');
+      document.getElementById('formSection').style.display = 'grid';
+      alert('Something went wrong. Please check your connection and try again.');
+      console.error(err);
+    }
+  }
+
+  function copyLetter() {
+    if (!currentLetter) return;
+    navigator.clipboard.writeText(currentLetter).then(() => {
+      alert('✅ Cover letter copied to clipboard! Paste it anywhere.');
+    });
+  }
+
+  function printLetter() {
+    const win = window.open('', '_blank');
+    win.document.write(`<html><head><title>Cover Letter</title>
+    <style>body{font-family:Georgia,serif;padding:60px;font-size:13pt;line-height:1.8;color:#111;max-width:700px;margin:auto;}</style>
+    </head><body><pre style="font-family:Georgia,serif;white-space:pre-wrap">${currentLetter}</pre></body></html>`);
+    win.document.close(); win.print();
+  }
+
+  async function regenerate() {
+    document.getElementById('resultSection').classList.remove('visible');
+    document.getElementById('loadingState').classList.add('visible');
+    document.getElementById('formSection').style.display = 'none';
+    await generateLetter();
+  }
+
+  function resetForm() {
+    document.getElementById('resultSection').classList.remove('visible');
+    document.getElementById('formSection').style.display = 'grid';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZUKA — Skill Gap Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145C42;
+      --green-light: #1E7A57;
+      --green-pale:  #EAF4EF;
+      --gold:        #D4A017;
+      --gold-light:  #F0C040;
+      --gold-pale:   #FDF6E3;
+      --white:       #FAFAF5;
+      --off-white:   #F3F0E8;
+      --text-dark:   #0B1F17;
+      --text-muted:  #6B7F75;
+      --border:      #E4E1D8;
+      --red:         #C0392B;
+      --red-pale:    #FDECEA;
+      --blue-pale:   #EEF2FF;
+      --blue:        #3B4FD4;
+      --sidebar-w:   260px;
+    }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-dark); overflow-x: hidden; }
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: var(--sidebar-w); background: var(--green); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; border-right: 1px solid rgba(255,255,255,0.06); }
+    .sidebar-logo { padding: 1.8rem 1.6rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--gold); letter-spacing: 3px; }
+    .logo-tagline { font-size: 0.68rem; color: rgba(255,255,255,0.35); letter-spacing: 1px; margin-top: 0.2rem; text-transform: uppercase; }
+    .sidebar-user { padding: 1.2rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.8rem; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green); font-size: 0.85rem; }
+    .user-name { font-size: 0.88rem; font-weight: 600; color: var(--white); }
+    .user-plan { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+    .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+    .nav-section-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 0.8rem 1.6rem 0.4rem; font-weight: 600; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1.6rem; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; text-decoration: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); border-left-color: rgba(212,160,23,0.4); }
+    .nav-item.active { background: rgba(212,160,23,0.12); border-left-color: var(--gold); }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-label { font-size: 0.88rem; color: rgba(255,255,255,0.7); font-weight: 400; }
+    .nav-item.active .nav-label { color: var(--white); font-weight: 500; }
+    .sidebar-footer { padding: 1rem 1.6rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .upgrade-card { background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25); border-radius: 6px; padding: 1rem; }
+    .upgrade-card p { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-bottom: 0.6rem; line-height: 1.4; }
+    .upgrade-btn { background: var(--gold); color: var(--green); border: none; border-radius: 4px; padding: 0.45rem 1rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; width: 100%; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
+    .upgrade-btn:hover { background: var(--gold-light); }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+    .topbar-left h2 { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
+    .topbar-left p { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
+    .free-badge { background: var(--gold-pale); border: 1px solid rgba(212,160,23,0.3); color: #8B6200; font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 20px; }
+
+    /* ── CONTENT ── */
+    .content { padding: 2rem; flex: 1; max-width: 960px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { background: var(--green); border-radius: 10px; padding: 1.8rem 2rem; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 1.2rem; animation: fadeUp 0.5s ease both; position: relative; overflow: hidden; }
+    .page-header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(212,160,23,0.12) 0%, transparent 70%); }
+    .header-icon { width: 56px; height: 56px; border-radius: 10px; background: rgba(212,160,23,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+    .header-text h1 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--white); }
+    .header-text p { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 0.3rem; font-weight: 300; }
+    .header-limit { margin-left: auto; text-align: right; flex-shrink: 0; }
+    .limit-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .limit-lbl { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+
+    /* ── TIP ── */
+    .tip-card { background: var(--green); border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.9rem; animation: fadeUp 0.5s ease 0.1s both; }
+    .tip-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .tip-label { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 0.3rem; }
+    .tip-text { font-size: 0.83rem; color: rgba(255,255,255,0.72); line-height: 1.6; font-weight: 300; }
+
+    /* ── FORM CARD ── */
+    .card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); animation: fadeUp 0.5s ease 0.1s both; }
+    .card-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 0.92rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 0.4rem; }
+    .card-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .card-body { padding: 1.5rem; }
+
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { font-size: 0.78rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.4rem; display: block; letter-spacing: 0.3px; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--text-dark); background: var(--off-white); outline: none; transition: border-color 0.2s, background 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); background: var(--white); }
+    .form-textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); font-weight: 300; }
+    .form-select { cursor: pointer; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.1rem; }
+
+    .analyse-btn { width: 100%; padding: 1rem; background: var(--green); color: var(--white); border: none; border-radius: 7px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .analyse-btn:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(11,61,46,0.2); }
+
+    /* ── LOADING ── */
+    .loading-state { display: none; text-align: center; padding: 3rem 2rem; background: var(--white); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .loading-state.visible { display: block; }
+    .spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--gold); animation: spin 0.8s linear infinite; margin: 0 auto 1.2rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 1rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.4rem; }
+    .loading-sub { font-size: 0.85rem; color: var(--text-muted); font-weight: 300; }
+    .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .loading-step { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .loading-step.active { color: var(--green); font-weight: 500; }
+    .step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+    .loading-step.active .step-dot { background: var(--gold); }
+
+    /* ── RESULTS ── */
+    .results-section { display: none; animation: fadeUp 0.6s ease both; }
+    .results-section.visible { display: block; }
+
+    /* ── READINESS BANNER ── */
+    .readiness-banner { background: var(--green); border-radius: 10px; padding: 2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+    .readiness-ring { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+    .ring-svg { width: 110px; height: 110px; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
+    .ring-fill { fill: none; stroke: var(--gold); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+    .ring-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .ring-pct { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--gold); line-height: 1; }
+    .ring-sub { font-size: 0.62rem; color: rgba(255,255,255,0.5); }
+    .readiness-info { flex: 1; }
+    .readiness-info h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--white); }
+    .readiness-info p { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 0.4rem; font-weight: 300; line-height: 1.6; }
+    .readiness-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .readiness-tag { font-size: 0.72rem; padding: 0.25rem 0.7rem; border-radius: 20px; font-weight: 600; }
+    .tag-match { background: var(--green-pale); color: var(--green-light); }
+    .tag-gap { background: rgba(192,57,43,0.2); color: #F1948A; }
+
+    /* ── THREE COL GRID ── */
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-bottom: 1.5rem; }
+    .result-card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); padding: 1.4rem; }
+    .result-card-title { font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.4rem; }
+    .result-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .result-list li { font-size: 0.82rem; color: var(--text-dark); display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.5; font-weight: 300; }
+    .bullet { flex-shrink: 0; margin-top: 0.05rem; }
+
+    /* ── SKILL GAPS DETAIL ── */
+    .gaps-card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1.5rem; overflow: hidden; }
+    .gaps-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .gaps-header-title { font-size: 0.92rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 0.4rem; }
+    .gaps-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+    .gap-item { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .gap-top { padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: var(--off-white); }
+    .gap-name { font-size: 0.9rem; font-weight: 600; color: var(--text-dark); }
+    .gap-priority { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .priority-high { background: var(--red-pale); color: var(--red); }
+    .priority-medium { background: var(--gold-pale); color: #8B6200; }
+    .priority-low { background: var(--green-pale); color: var(--green-mid); }
+    .gap-bar-wrap { padding: 0 1.2rem 0.5rem; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.8rem; }
+    .gap-bar-label { font-size: 0.7rem; color: var(--text-muted); width: 80px; flex-shrink: 0; }
+    .gap-bar-bg { flex: 1; height: 6px; border-radius: 10px; background: var(--border); overflow: hidden; }
+    .gap-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--red), #E74C3C); transition: width 1s ease; }
+    .gap-bar-val { font-size: 0.7rem; color: var(--text-muted); width: 30px; text-align: right; }
+    .gap-detail { padding: 0.8rem 1.2rem 1rem; border-top: 1px solid var(--border); }
+    .gap-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; font-weight: 300; margin-bottom: 0.7rem; }
+    .gap-resources { display: flex; flex-direction: column; gap: 0.4rem; }
+    .gap-resource { font-size: 0.78rem; color: var(--green); display: flex; align-items: center; gap: 0.4rem; font-weight: 500; }
+
+    /* ── LEARNING PATH ── */
+    .path-card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1.5rem; overflow: hidden; }
+    .path-header { background: var(--gold-pale); padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(212,160,23,0.2); }
+    .path-header-title { font-size: 0.92rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 0.4rem; }
+    .path-header-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .path-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0; }
+    .path-step { display: flex; gap: 1rem; position: relative; }
+    .path-step:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 36px; width: 2px; height: calc(100% - 10px); background: var(--border); }
+    .path-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; margin-top: 0.1rem; z-index: 1; }
+    .dot-1 { background: var(--red-pale); color: var(--red); }
+    .dot-2 { background: var(--gold-pale); color: #8B6200; }
+    .dot-3 { background: var(--green-pale); color: var(--green-mid); }
+    .dot-4 { background: var(--blue-pale); color: var(--blue); }
+    .path-info { padding-bottom: 1.5rem; }
+    .path-week { font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 0.2rem; }
+    .path-title { font-size: 0.9rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.3rem; }
+    .path-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+
+    /* ── ACTIONS ── */
+    .action-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .action-btn { flex: 1; padding: 0.85rem 1rem; border-radius: 7px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.25s; border: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+    .btn-green { background: var(--green); color: var(--white); }
+    .btn-green:hover { background: var(--green-light); }
+    .btn-outline { background: transparent; color: var(--green); border: 1.5px solid var(--green); }
+    .btn-outline:hover { background: var(--green-pale); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; } .three-col { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr; } .readiness-banner { flex-direction: column; } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">ZUKA</div>
+      <div class="logo-tagline">AI Career Launchpad</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">AM</div>
+      <div>
+        <div class="user-name">Amara Mensah</div>
+        <div class="user-plan">Free Plan</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="zuka-jobs.html"><span class="nav-icon">🌐</span><span class="nav-label">Browse Jobs</span></a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="zuka-cv-reviewer.html"><span class="nav-icon">📄</span><span class="nav-label">CV Reviewer</span></a>
+      <a class="nav-item" href="zuka-cover-letter.html"><span class="nav-icon">✍️</span><span class="nav-label">Cover Letter</span></a>
+      <a class="nav-item active" href="zuka-skill-gap.html"><span class="nav-icon">🎯</span><span class="nav-label">Skill Gap</span></a>
+      <a class="nav-item" href="zuka-interview-prep.html"><span class="nav-icon">🎤</span><span class="nav-label">Interview Prep</span></a>
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">👤</span><span class="nav-label">My Profile</span></a>
+      <a class="nav-item" href="zuka-dashboard.html"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="upgrade-card">
+        <p>Unlock unlimited skill analyses with Premium</p>
+        <button class="upgrade-btn">Upgrade — $4/mo</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Skill Gap Analyzer</h2>
+        <p>Find exactly what skills you're missing and how to get them fast</p>
+      </div>
+      <div class="free-badge">🎁 3 Free Analyses/Month</div>
+    </header>
+
+    <main class="content">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="header-icon">🎯</div>
+        <div class="header-text">
+          <h1>Skill Gap Analyzer</h1>
+          <p>Tell Zuka what job you want and what you currently know. AI tells you exactly what's missing and how to close the gap.</p>
+        </div>
+        <div class="header-limit">
+          <div class="limit-val">3</div>
+          <div class="limit-lbl">Analyses remaining</div>
+        </div>
+      </div>
+
+      <!-- TIP -->
+      <div class="tip-card">
+        <div class="tip-icon">💡</div>
+        <div>
+          <div class="tip-label">Zuka Pro Tip</div>
+          <div class="tip-text">Most graduates apply for jobs they are 60–70% ready for and get rejected. This tool shows you that missing 30–40% and gives you a clear plan to close it — fast.</div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="card" id="formSection">
+        <div class="card-header">
+          <div class="card-title">🎯 Analyse Your Skill Gap</div>
+          <div class="card-sub">Fill in your details and the job you want — AI does the rest</div>
+        </div>
+        <div class="card-body">
+          <div class="two-col">
+            <div class="form-group">
+              <label class="form-label">Your Qualification Type *</label>
+              <select class="form-select" id="qualType">
+                <option value="">— Select —</option>
+                <option value="Bachelor's Degree">Bachelor's Degree</option>
+                <option value="Diploma">Diploma</option>
+                <option value="Higher National Diploma (HND)">Higher National Diploma (HND)</option>
+                <option value="Certificate">Certificate</option>
+                <option value="Associate Degree">Associate Degree</option>
+                <option value="Vocational Training">Vocational Training</option>
+                <option value="Self Taught / Bootcamp">Self Taught / Bootcamp</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Field of Study *</label>
+              <input class="form-input" id="fieldOfStudy" type="text" placeholder="e.g. Computer Science, Business Admin"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Your Current Skills (be honest — list everything you know) *</label>
+            <textarea class="form-textarea" id="currentSkills" placeholder="e.g. Microsoft Word, Excel basics, Python basics, Communication, Social media management, Canva design, Customer service..."></textarea>
+          </div>
+
+          <div class="two-col">
+            <div class="form-group">
+              <label class="form-label">Job Role You Want *</label>
+              <input class="form-input" id="targetJob" type="text" placeholder="e.g. Junior Data Analyst"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Industry / Company Type</label>
+              <input class="form-input" id="industry" type="text" placeholder="e.g. Tech startup, NGO, Finance"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Job Description (paste from a real job post for best results) *</label>
+            <textarea class="form-textarea" style="min-height:120px" id="jobDesc" placeholder="Paste the job description or requirements here. The more detail, the more accurate your skill gap analysis will be..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">How much time can you dedicate to learning per week?</label>
+            <select class="form-select" id="learningTime">
+              <option value="1-2 hours">1–2 hours per week</option>
+              <option value="3-5 hours" selected>3–5 hours per week</option>
+              <option value="5-10 hours">5–10 hours per week</option>
+              <option value="10+ hours">10+ hours per week (full focus)</option>
+            </select>
+          </div>
+
+          <button class="analyse-btn" onclick="analyseGap()">
+            🎯 Analyse My Skill Gap
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-title">Zuka AI is analysing your skill gap...</div>
+        <div class="loading-sub">Comparing your skills to job requirements. About 15 seconds.</div>
+        <div class="loading-steps">
+          <div class="loading-step active" id="ls1"><div class="step-dot"></div> Reading your current skills</div>
+          <div class="loading-step" id="ls2"><div class="step-dot"></div> Analysing job requirements</div>
+          <div class="loading-step" id="ls3"><div class="step-dot"></div> Identifying critical gaps</div>
+          <div class="loading-step" id="ls4"><div class="step-dot"></div> Building your learning path</div>
+          <div class="loading-step" id="ls5"><div class="step-dot"></div> Calculating readiness score</div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="results-section" id="resultsSection">
+
+        <!-- READINESS BANNER -->
+        <div class="readiness-banner">
+          <div class="readiness-ring">
+            <svg class="ring-svg" viewBox="0 0 110 110">
+              <circle class="ring-bg" cx="55" cy="55" r="46"/>
+              <circle class="ring-fill" id="ringFill" cx="55" cy="55" r="46" stroke-dasharray="289" stroke-dashoffset="289"/>
+            </svg>
+            <div class="ring-label">
+              <div class="ring-pct" id="readinessPct">0%</div>
+              <div class="ring-sub">Ready</div>
+            </div>
+          </div>
+          <div class="readiness-info">
+            <h2 id="readinessTitle">—</h2>
+            <p id="readinessSub">—</p>
+            <div class="readiness-tags" id="readinessTags"></div>
+          </div>
+        </div>
+
+        <!-- THREE COLUMNS -->
+        <div class="three-col">
+          <div class="result-card">
+            <div class="result-card-title" style="color:var(--green-light)">✅ Skills You Have</div>
+            <ul class="result-list" id="hasSkillsList"></ul>
+          </div>
+          <div class="result-card">
+            <div class="result-card-title" style="color:var(--red)">❌ Skills You're Missing</div>
+            <ul class="result-list" id="missingSkillsList"></ul>
+          </div>
+          <div class="result-card">
+            <div class="result-card-title" style="color:var(--gold)">⚡ Quick Wins</div>
+            <ul class="result-list" id="quickWinsList"></ul>
+          </div>
+        </div>
+
+        <!-- SKILL GAPS DETAIL -->
+        <div class="gaps-card">
+          <div class="gaps-header">
+            <div class="gaps-header-title">🔍 Gap Analysis — Detailed Breakdown</div>
+          </div>
+          <div class="gaps-body" id="gapsBody"></div>
+        </div>
+
+        <!-- LEARNING PATH -->
+        <div class="path-card">
+          <div class="path-header">
+            <div class="path-header-title">🗺️ Your Personalised Learning Path</div>
+            <div class="path-header-sub" id="pathSubtitle">—</div>
+          </div>
+          <div class="path-body" id="pathBody"></div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="action-row">
+          <button class="action-btn btn-green" onclick="goInterview()">🎤 Prep for Interview Now</button>
+          <button class="action-btn btn-outline" onclick="resetForm()">🔄 Analyse Another Job</button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  function getVal(id) { return document.getElementById(id).value.trim(); }
+
+  function animateLoadingSteps() {
+    const steps = ['ls1','ls2','ls3','ls4','ls5'];
+    let i = 0;
+    return setInterval(() => {
+      steps.forEach(s => document.getElementById(s).classList.remove('active'));
+      if (i < steps.length) { document.getElementById(steps[i]).classList.add('active'); i++; }
+    }, 2800);
+  }
+
+  async function analyseGap() {
+    const qualType      = document.getElementById('qualType').value;
+    const fieldOfStudy  = getVal('fieldOfStudy');
+    const currentSkills = getVal('currentSkills');
+    const targetJob     = getVal('targetJob');
+    const jobDesc       = getVal('jobDesc');
+    const learningTime  = document.getElementById('learningTime').value;
+    const industry      = getVal('industry');
+
+    if (!qualType || !fieldOfStudy || !currentSkills || !targetJob || !jobDesc) {
+      alert('Please fill in all required fields marked with *');
+      return;
+    }
+
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('loadingState').classList.add('visible');
+    document.getElementById('resultsSection').classList.remove('visible');
+
+    const loadingInterval = animateLoadingSteps();
+
+    const prompt = `You are ZUKA's expert skill gap analyst for fresh African graduates seeking remote jobs.
+
+Analyse this graduate's skill gap for their target job. Respond ONLY with valid JSON — no preamble, no markdown, no backticks.
+
+GRADUATE PROFILE:
+- Qualification: ${qualType} in ${fieldOfStudy}
+- Current Skills: ${currentSkills}
+- Industry Interest: ${industry || 'General'}
+
+TARGET JOB:
+- Role: ${targetJob}
+- Job Description: ${jobDesc}
+- Available Learning Time: ${learningTime}
+
+Return exactly this JSON:
+{
+  "readinessScore": <number 0-100>,
+  "readinessTitle": "<short verdict e.g. 'Early Stage — Big Opportunity Ahead'>",
+  "readinessSub": "<one encouraging sentence about their situation and potential>",
+  "matchedSkills": ["<skill 1>", "<skill 2>", "<skill 3>"],
+  "missingSkills": ["<skill 1>", "<skill 2>", "<skill 3>", "<skill 4>"],
+  "quickWins": ["<something they can learn in 1-2 days>", "<quick win 2>", "<quick win 3>"],
+  "gaps": [
+    {
+      "skill": "<skill name>",
+      "priority": "High",
+      "currentLevel": <0-30>,
+      "description": "<why this skill matters for the role>",
+      "resources": ["<free resource 1 e.g. freeCodeCamp>", "<resource 2>"]
+    },
+    {
+      "skill": "<skill name>",
+      "priority": "Medium",
+      "currentLevel": <20-50>,
+      "description": "<why this skill matters>",
+      "resources": ["<resource 1>", "<resource 2>"]
+    },
+    {
+      "skill": "<skill name>",
+      "priority": "Low",
+      "currentLevel": <40-70>,
+      "description": "<why this skill matters>",
+      "resources": ["<resource 1>"]
+    }
+  ],
+  "learningPath": [
+    { "week": "Week 1–2", "title": "<focus area>", "description": "<what to do and learn>" },
+    { "week": "Week 3–4", "title": "<focus area>", "description": "<what to do and learn>" },
+    { "week": "Week 5–6", "title": "<focus area>", "description": "<what to do and learn>" },
+    { "week": "Week 7–8", "title": "<focus area — ready to apply>", "description": "<final prep and applying>" }
+  ],
+  "pathSubtitle": "<e.g. '8-week plan based on 3-5 hours per week'>"
+}`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const raw = data.content.map(i => i.text || '').join('');
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const result = JSON.parse(clean);
+
+      clearInterval(loadingInterval);
+      document.getElementById('loadingState').classList.remove('visible');
+      renderResults(result);
+
+    } catch (err) {
+      clearInterval(loadingInterval);
+      document.getElementById('loadingState').classList.remove('visible');
+      document.getElementById('formSection').style.display = 'block';
+      alert('Something went wrong. Please check your connection and try again.');
+      console.error(err);
+    }
+  }
+
+  function renderResults(r) {
+    // Readiness ring
+    const circumference = 289;
+    const offset = circumference - (r.readinessScore / 100) * circumference;
+    setTimeout(() => {
+      document.getElementById('ringFill').style.strokeDashoffset = offset;
+    }, 100);
+    document.getElementById('readinessPct').textContent = r.readinessScore + '%';
+    document.getElementById('readinessTitle').textContent = r.readinessTitle;
+    document.getElementById('readinessSub').textContent = r.readinessSub;
+
+    // Tags
+    const tagsHTML = r.matchedSkills.slice(0,3).map(s =>
+      `<span class="readiness-tag tag-match">✓ ${s}</span>`).join('') +
+      r.missingSkills.slice(0,2).map(s =>
+      `<span class="readiness-tag tag-gap">✗ ${s}</span>`).join('');
+    document.getElementById('readinessTags').innerHTML = tagsHTML;
+
+    // Three columns
+    document.getElementById('hasSkillsList').innerHTML = r.matchedSkills.map(s =>
+      `<li><span class="bullet">✅</span>${s}</li>`).join('');
+    document.getElementById('missingSkillsList').innerHTML = r.missingSkills.map(s =>
+      `<li><span class="bullet">❌</span>${s}</li>`).join('');
+    document.getElementById('quickWinsList').innerHTML = r.quickWins.map(s =>
+      `<li><span class="bullet">⚡</span>${s}</li>`).join('');
+
+    // Gaps detail
+    const dotColors = { High: 'dot-1', Medium: 'dot-2', Low: 'dot-3' };
+    document.getElementById('gapsBody').innerHTML = r.gaps.map(g => `
+      <div class="gap-item">
+        <div class="gap-top">
+          <div class="gap-name">${g.skill}</div>
+          <div class="gap-priority priority-${g.priority.toLowerCase()}">${g.priority} Priority</div>
+        </div>
+        <div class="gap-bar-wrap">
+          <div class="gap-bar-label">Current level</div>
+          <div class="gap-bar-bg"><div class="gap-bar-fill" style="width:${g.currentLevel}%"></div></div>
+          <div class="gap-bar-val">${g.currentLevel}%</div>
+        </div>
+        <div class="gap-detail">
+          <div class="gap-desc">${g.description}</div>
+          <div class="gap-resources">
+            ${g.resources.map(r => `<div class="gap-resource">📚 ${r}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Learning path
+    document.getElementById('pathSubtitle').textContent = r.pathSubtitle;
+    const dotClass = ['dot-1','dot-2','dot-3','dot-4'];
+    document.getElementById('pathBody').innerHTML = r.learningPath.map((step, i) => `
+      <div class="path-step">
+        <div class="path-dot ${dotClass[i] || 'dot-4'}">${i + 1}</div>
+        <div class="path-info">
+          <div class="path-week">${step.week}</div>
+          <div class="path-title">${step.title}</div>
+          <div class="path-desc">${step.description}</div>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('resultsSection').classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    document.getElementById('resultsSection').classList.remove('visible');
+    document.getElementById('formSection').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goInterview() {
+    alert('Interview Prep — coming next in ZUKA!');
+  }
+</script>
+</body>
+</html>
