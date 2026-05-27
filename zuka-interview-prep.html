@@ -446,7 +446,7 @@ async function generateQuestions() {
   var prompt = 'You are ZUKA interview coach for fresh African graduates. Generate interview questions. Respond ONLY with valid JSON, no markdown, no backticks, no extra text.\n\nCANDIDATE: ' + background + '\nROLE: ' + jobTitle + ' at ' + (companyName || 'the company') + '\nDIFFICULTY: ' + difficulty + '\nCATEGORIES: ' + cats + '\nJOB DESC: ' + (jobDesc || 'not provided') + '\n\nReturn this exact JSON structure:\n{"sessionTitle":"<role at company>","sessionDesc":"<one coaching sentence>","questions":[{"id":1,"category":"<category>","question":"<question text>"},{"id":2,"category":"<category>","question":"<question text>"},{"id":3,"category":"<category>","question":"<question text>"},{"id":4,"category":"<category>","question":"<question text>"},{"id":5,"category":"<category>","question":"<question text>"}]}\n\nGenerate 1 question per selected category, maximum 5 total. Keep question text under 20 words each. Category must be one of: ' + cats;
 
   try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
+    var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -540,7 +540,7 @@ async function loadAnswerForQuestion(i) {
   var prompt = 'You are ZUKA interview coach. Give coaching for this interview question. Respond ONLY with valid JSON, no markdown, no backticks.\n\nQuestion: ' + q.question + '\nCategory: ' + q.category + '\nRole: ' + jobTitle + '\nCandidate background: ' + background + '\n\nReturn this exact JSON:\n{"situation":"<how to frame situation in 1 sentence>","task":"<what task to describe in 1 sentence>","action":"<what action to mention in 1 sentence>","result":"<what result to highlight in 1 sentence>","modelAnswer":"<2-3 sentence confident answer they can adapt>","interviewerTip":"<what interviewer is testing in 1 sentence>","commonMistake":"<most common mistake in 1 sentence>"}';
 
   try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
+    var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -640,7 +640,7 @@ async function getFeedback() {
   var prompt = 'You are ZUKA interview coach. Give brief honest encouraging feedback on this practice answer in 3 sentences. What they did well, what to improve, one specific tip. No bullet points.\n\nQuestion: ' + currentPracticeQ + '\nAnswer: ' + answer;
 
   try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
+    var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
