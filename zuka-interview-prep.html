@@ -457,19 +457,26 @@ async function generateQuestions() {
     });
 
     var data = await response.json();
-    var raw = data.content.map(function(item) { return item.text || ''; }).join('');
-    var clean = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-    var result = JSON.parse(clean);
 
-    allQuestions = result.questions;
-    document.getElementById('loadingState').classList.remove('visible');
-    renderResults(result);
+if (data.error) {
+  throw new Error('API Error: ' + JSON.stringify(data.error));
+}
+if (!data.content || data.content.length === 0) {
+  throw new Error('Empty: ' + JSON.stringify(data));
+}
 
-  } catch (err) {
-    document.getElementById('loadingState').classList.remove('visible');
-    document.getElementById('formSection').style.display = 'block';
-    console.error('Generate error:', err);
-    alert('Could not load questions. Please try again.');
+var raw = data.content.map(function(item) { return item.text || ''; }).join('');
+var clean = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+var result = JSON.parse(clean);
+
+allQuestions = result.questions;
+document.getElementById('loadingState').classList.remove('visible');
+renderResults(result);
+
+} catch (err) {
+document.getElementById('loadingState').classList.remove('visible');
+document.getElementById('formSection').style.display = 'block';
+alert('Debug: ' + err.message);
   }
 }
 
